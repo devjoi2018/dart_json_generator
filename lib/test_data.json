@@ -1,0 +1,402 @@
+[
+  {
+    "userName": "Susan Rodriguez",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 22,
+    "avatarUrl": "https://randomuser.me/api/portraits/women/0.jpg",
+    "isShared": true,
+    "isOpen": false
+  },
+  {
+    "userName": "Keith Hall",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 16,
+    "avatarUrl": "https://randomuser.me/api/portraits/men/1.jpg",
+    "isShared": true,
+    "isOpen": false
+  },
+  {
+    "userName": "Nancy Taylor",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 16,
+    "avatarUrl": "https://randomuser.me/api/portraits/women/2.jpg",
+    "isShared": true,
+    "isOpen": false
+  },
+  {
+    "userName": "Samuel Anderson",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 14,
+    "avatarUrl": "https://randomuser.me/api/portraits/men/3.jpg",
+    "isShared": false,
+    "isOpen": false
+  },
+  {
+    "userName": "Stephanie Anderson",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 19,
+    "avatarUrl": "https://randomuser.me/api/portraits/women/4.jpg",
+    "isShared": false,
+    "isOpen": false
+  },
+  {
+    "userName": "Debra Wright",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 4,
+    "avatarUrl": "https://randomuser.me/api/portraits/women/5.jpg",
+    "isShared": false,
+    "isOpen": false
+  },
+  {
+    "userName": "Joseph Rodriguez",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 5,
+    "avatarUrl": "https://randomuser.me/api/portraits/men/6.jpg",
+    "isShared": false,
+    "isOpen": false
+  },
+  {
+    "userName": "Todd Hernandez",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 15,
+    "avatarUrl": "https://randomuser.me/api/portraits/men/7.jpg",
+    "isShared": true,
+    "isOpen": false
+  },
+  {
+    "userName": "Christopher Martinez",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 0,
+    "avatarUrl": "https://randomuser.me/api/portraits/men/8.jpg",
+    "isShared": true,
+    "isOpen": false
+  },
+  {
+    "userName": "Jerry Lewis",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 20,
+    "avatarUrl": "https://randomuser.me/api/portraits/men/9.jpg",
+    "isShared": true,
+    "isOpen": false
+  },
+  {
+    "userName": "Donna Jackson",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 17,
+    "avatarUrl": "https://randomuser.me/api/portraits/women/10.jpg",
+    "isShared": true,
+    "isOpen": false
+  },
+  {
+    "userName": "Lisa Anderson",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 21,
+    "avatarUrl": "https://randomuser.me/api/portraits/women/11.jpg",
+    "isShared": true,
+    "isOpen": false
+  },
+  {
+    "userName": "Heather Lopez",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 28,
+    "avatarUrl": "https://randomuser.me/api/portraits/women/12.jpg",
+    "isShared": false,
+    "isOpen": false
+  },
+  {
+    "userName": "Stephanie Anderson",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 1,
+    "avatarUrl": "https://randomuser.me/api/portraits/women/13.jpg",
+    "isShared": false,
+    "isOpen": false
+  },
+  {
+    "userName": "Linda Brown",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 20,
+    "avatarUrl": "https://randomuser.me/api/portraits/women/14.jpg",
+    "isShared": true,
+    "isOpen": false
+  },
+  {
+    "userName": "Lisa Anderson",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 18,
+    "avatarUrl": "https://randomuser.me/api/portraits/women/15.jpg",
+    "isShared": true,
+    "isOpen": false
+  },
+  {
+    "userName": "Bruce Thompson",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 5,
+    "avatarUrl": "https://randomuser.me/api/portraits/men/16.jpg",
+    "isShared": true,
+    "isOpen": false
+  },
+  {
+    "userName": "Debra Wright",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 16,
+    "avatarUrl": "https://randomuser.me/api/portraits/women/17.jpg",
+    "isShared": true,
+    "isOpen": false
+  },
+  {
+    "userName": "Sara Lee",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 8,
+    "avatarUrl": "https://randomuser.me/api/portraits/women/18.jpg",
+    "isShared": false,
+    "isOpen": false
+  },
+  {
+    "userName": "Diane Thomas",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 1,
+    "avatarUrl": "https://randomuser.me/api/portraits/women/19.jpg",
+    "isShared": false,
+    "isOpen": false
+  },
+  {
+    "userName": "Debra Wright",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 16,
+    "avatarUrl": "https://randomuser.me/api/portraits/women/20.jpg",
+    "isShared": false,
+    "isOpen": false
+  },
+  {
+    "userName": "Jessica Allen",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 17,
+    "avatarUrl": "https://randomuser.me/api/portraits/women/21.jpg",
+    "isShared": true,
+    "isOpen": false
+  },
+  {
+    "userName": "Joseph Rodriguez",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 16,
+    "avatarUrl": "https://randomuser.me/api/portraits/men/22.jpg",
+    "isShared": false,
+    "isOpen": false
+  },
+  {
+    "userName": "Ashley Hernandez",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 9,
+    "avatarUrl": "https://randomuser.me/api/portraits/women/23.jpg",
+    "isShared": false,
+    "isOpen": false
+  },
+  {
+    "userName": "Ralph Moore",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 21,
+    "avatarUrl": "https://randomuser.me/api/portraits/men/24.jpg",
+    "isShared": false,
+    "isOpen": false
+  },
+  {
+    "userName": "Grace Garcia",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 4,
+    "avatarUrl": "https://randomuser.me/api/portraits/women/25.jpg",
+    "isShared": true,
+    "isOpen": false
+  },
+  {
+    "userName": "Carol Martin",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 17,
+    "avatarUrl": "https://randomuser.me/api/portraits/women/26.jpg",
+    "isShared": false,
+    "isOpen": false
+  },
+  {
+    "userName": "Marie Martinez",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 27,
+    "avatarUrl": "https://randomuser.me/api/portraits/women/27.jpg",
+    "isShared": true,
+    "isOpen": false
+  },
+  {
+    "userName": "Albert Lopez",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 27,
+    "avatarUrl": "https://randomuser.me/api/portraits/men/28.jpg",
+    "isShared": true,
+    "isOpen": false
+  },
+  {
+    "userName": "Mary Johnson",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 7,
+    "avatarUrl": "https://randomuser.me/api/portraits/women/29.jpg",
+    "isShared": true,
+    "isOpen": false
+  },
+  {
+    "userName": "Beverly Lee",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 16,
+    "avatarUrl": "https://randomuser.me/api/portraits/women/30.jpg",
+    "isShared": true,
+    "isOpen": false
+  },
+  {
+    "userName": "Walter Martinez",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 4,
+    "avatarUrl": "https://randomuser.me/api/portraits/men/31.jpg",
+    "isShared": false,
+    "isOpen": false
+  },
+  {
+    "userName": "Christopher Martinez",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 28,
+    "avatarUrl": "https://randomuser.me/api/portraits/men/32.jpg",
+    "isShared": true,
+    "isOpen": false
+  },
+  {
+    "userName": "Jack Martinez",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 20,
+    "avatarUrl": "https://randomuser.me/api/portraits/men/33.jpg",
+    "isShared": true,
+    "isOpen": false
+  },
+  {
+    "userName": "Aaron Martinez",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 21,
+    "avatarUrl": "https://randomuser.me/api/portraits/men/34.jpg",
+    "isShared": false,
+    "isOpen": false
+  },
+  {
+    "userName": "Eugene Garcia",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 3,
+    "avatarUrl": "https://randomuser.me/api/portraits/men/35.jpg",
+    "isShared": true,
+    "isOpen": false
+  },
+  {
+    "userName": "Doris Garcia",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 19,
+    "avatarUrl": "https://randomuser.me/api/portraits/women/36.jpg",
+    "isShared": true,
+    "isOpen": false
+  },
+  {
+    "userName": "Justin Garcia",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 1,
+    "avatarUrl": "https://randomuser.me/api/portraits/men/37.jpg",
+    "isShared": false,
+    "isOpen": false
+  },
+  {
+    "userName": "Anna Hill",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 8,
+    "avatarUrl": "https://randomuser.me/api/portraits/women/38.jpg",
+    "isShared": false,
+    "isOpen": false
+  },
+  {
+    "userName": "Justin Garcia",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 23,
+    "avatarUrl": "https://randomuser.me/api/portraits/men/39.jpg",
+    "isShared": false,
+    "isOpen": false
+  },
+  {
+    "userName": "Jack Martinez",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 12,
+    "avatarUrl": "https://randomuser.me/api/portraits/men/40.jpg",
+    "isShared": false,
+    "isOpen": false
+  },
+  {
+    "userName": "Lori Thompson",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 6,
+    "avatarUrl": "https://randomuser.me/api/portraits/women/41.jpg",
+    "isShared": true,
+    "isOpen": false
+  },
+  {
+    "userName": "Tiffany Garcia",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 20,
+    "avatarUrl": "https://randomuser.me/api/portraits/women/42.jpg",
+    "isShared": false,
+    "isOpen": false
+  },
+  {
+    "userName": "Katherine Moore",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 2,
+    "avatarUrl": "https://randomuser.me/api/portraits/women/43.jpg",
+    "isShared": false,
+    "isOpen": false
+  },
+  {
+    "userName": "Tiffany Garcia",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 14,
+    "avatarUrl": "https://randomuser.me/api/portraits/women/44.jpg",
+    "isShared": false,
+    "isOpen": false
+  },
+  {
+    "userName": "Diane Thomas",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 2,
+    "avatarUrl": "https://randomuser.me/api/portraits/women/45.jpg",
+    "isShared": false,
+    "isOpen": false
+  },
+  {
+    "userName": "Lori Thompson",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 17,
+    "avatarUrl": "https://randomuser.me/api/portraits/women/46.jpg",
+    "isShared": false,
+    "isOpen": false
+  },
+  {
+    "userName": "Heather Lopez",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 0,
+    "avatarUrl": "https://randomuser.me/api/portraits/women/47.jpg",
+    "isShared": false,
+    "isOpen": false
+  },
+  {
+    "userName": "Brian Lee",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 27,
+    "avatarUrl": "https://randomuser.me/api/portraits/men/48.jpg",
+    "isShared": true,
+    "isOpen": false
+  },
+  {
+    "userName": "Steven Jackson",
+    "userEmail": "example@gmail.com",
+    "sharedTasks": 26,
+    "avatarUrl": "https://randomuser.me/api/portraits/men/49.jpg",
+    "isShared": false,
+    "isOpen": false
+  }
+]
