@@ -45,13 +45,13 @@ class AllUtils {
   }
 
   /// Metodo que genera una url de un avatar mujer.
-  String femaleVatarUrl() {
+  String generateRandomFemaleVatarUrl() {
     final int randomInt = Random().nextInt(99);
     return 'https://randomuser.me/api/portraits/women/$randomInt.jpg';
   }
 
   /// Metodo que genera una url de un avatar hombre.
-  String maleVatarUrl() {
+  String genereateRandomMaleVatarUrl() {
     final int randomInt = Random().nextInt(99);
     return 'https://randomuser.me/api/portraits/men/$randomInt.jpg';
   }
