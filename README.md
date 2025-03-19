@@ -1,7 +1,7 @@
 # 🚀 **Dart JSON Generator**
 
 <div align="center">
-  <h3>Versión v1.2.0</h3>
+  <h3>Versión v1.3.0</h3>
   <p>Una herramienta potente para generar archivos JSON con datos aleatorios o personalizados</p>
 </div>
 
@@ -16,6 +16,12 @@
 - [Opciones de Configuración](#-opciones-de-configuración)
 - [Sistema de Templates](#-sistema-de-templates)
 - [Generación de Datos Aleatorios](#-generación-de-datos-aleatorios)
+  - [Datos Personales](#-datos-personales)
+  - [Datos Numéricos](#-datos-numéricos-y-booleanos)
+  - [Fechas y Horas](#-fechas-y-horas)
+  - [Datos de Red y Ubicación](#-datos-de-red-y-ubicación)
+  - [Direcciones](#-datos-de-dirección)
+  - [Contenido y Diseño](#-datos-de-diseño-y-contenido)
 - [Ejemplos Avanzados](#-ejemplos-avanzados)
 - [Personalización](#-personalización)
 - [Formatos de Salida](#-formatos-de-salida)
@@ -27,6 +33,8 @@
 ## 📝 **Descripción**
 
 Dart JSON Generator es una herramienta robusta que permite generar archivos de datos a partir de mapas de datos en Dart. Soporta generación de datos aleatorios, configuraciones personalizables, múltiples formatos de salida como JSON, YAML y XML, validación de datos contra esquemas JSON y compresión de archivos para optimizar el almacenamiento.
+
+La herramienta incluye generación avanzada de datos complejos como coordenadas geográficas, direcciones postales completas, códigos de colores, nombres de usuario, contraseñas seguras, UUIDs, URLs por categoría y texto lorem ipsum, facilitando la creación de conjuntos de datos realistas para pruebas y desarrollo.
 
 ---
 
@@ -253,7 +261,13 @@ dataGenerator.generateRandomFemaleOrMaleName(isFullName: true)
 
 // Contacto
 dataGenerator.generateRandomEmail()
+dataGenerator.generateRandomPhoneNumber(countryCode: 'ES', withPrefix: true)
 dataGenerator.generateRandomAvatarUrl()
+
+// Identificadores
+dataGenerator.generateRandomUsername()
+dataGenerator.generateRandomPassword(length: 16, includeUppercase: true, includeNumbers: true, includeSpecialChars: true)
+dataGenerator.generateRandomUUID()
 ```
 
 ### 📊 Datos numéricos y booleanos:
@@ -274,10 +288,31 @@ dataGenerator.generateRandomDate(
 )
 ```
 
-### 🌐 Datos de red:
+### 🌐 Datos de red y ubicación:
 
 ```dart
 dataGenerator.generateRandomIpAddress(ipv6: false)
+dataGenerator.generateRandomUrl(category: 'web') // Categorías: web, image, profile, placeholder
+dataGenerator.generateRandomGeoCoordinates(
+  minLat: 36.0,
+  maxLat: 44.0,
+  minLong: -10.0,
+  maxLong: 5.0
+)
+```
+
+### 🏙️ Datos de dirección:
+
+```dart
+dataGenerator.generateRandomPostalCode(countryCode: 'ES')
+dataGenerator.generateRandomAddress(countryCode: 'ES')
+```
+
+### 🎨 Datos de diseño y contenido:
+
+```dart
+dataGenerator.generateRandomColor(withAlpha: false)
+dataGenerator.generateRandomLoremIpsum(minWords: 50, maxWords: 200)
 ```
 
 ---
@@ -326,6 +361,89 @@ jsonGenerator.generateJsonList(
     );
   },
   addIdAutoincrement: true,
+);
+```
+
+### Generación de datos geográficos (GeoJSON):
+
+```dart
+jsonGenerator.generateJson(
+  jsonName: 'geo_points',
+  jsonMap: (Map<String, dynamic> data) {
+    final features = <Map<String, dynamic>>[];
+
+    // Generar 10 puntos geográficos aleatorios
+    for (int i = 0; i < 10; i++) {
+      // Limpiar caché del generador para obtener valores distintos
+      (dataGenerator as dynamic).clearCache();
+
+      // Generar coordenadas para España y Portugal
+      final coordinates = dataGenerator.generateRandomGeoCoordinates(
+        minLat: 36.0, // Sur de España
+        maxLat: 43.8, // Norte de España
+        minLong: -9.5, // Oeste de Portugal
+        maxLong: 3.3,  // Este de España
+      );
+
+      // Crear punto GeoJSON
+      features.add({
+        'type': 'Feature',
+        'properties': {
+          'id': i + 1,
+          'name': dataGenerator.generateRandomFemaleOrMaleName(isFullName: true),
+          'category': ['ciudad', 'monumento', 'parque', 'playa'][i % 4],
+          'address': dataGenerator.generateRandomAddress(),
+        },
+        'geometry': {
+          'type': 'Point',
+          'coordinates': [coordinates['longitude'], coordinates['latitude']], // GeoJSON usa [long, lat]
+        },
+      });
+    }
+
+    return {
+      'type': 'FeatureCollection',
+      'features': features,
+    };
+  },
+);
+```
+
+### Generación de perfiles de usuario con datos complejos:
+
+```dart
+jsonGenerator.generateJson(
+  jsonName: 'perfil_usuario',
+  jsonMap: (Map<String, dynamic> data) {
+    return <String, dynamic>{
+      'id': dataGenerator.generateRandomUUID(),
+      'username': dataGenerator.generateRandomUsername(),
+      'password': dataGenerator.generateRandomPassword(
+        length: 16,
+        includeUppercase: true,
+        includeNumbers: true,
+        includeSpecialChars: true,
+      ),
+      'contacto': {
+        'email': dataGenerator.generateRandomEmail(),
+        'telefono': dataGenerator.generateRandomPhoneNumber(countryCode: 'ES', withPrefix: true),
+        'sitioWeb': dataGenerator.generateRandomUrl(category: 'web'),
+      },
+      'ubicacion': {
+        'coordenadas': dataGenerator.generateRandomGeoCoordinates(),
+        'direccion': dataGenerator.generateRandomAddress(countryCode: 'ES'),
+      },
+      'preferencias': {
+        'temaColor': {
+          'primario': dataGenerator.generateRandomColor(),
+          'secundario': dataGenerator.generateRandomColor(withAlpha: true),
+        },
+        'notificaciones': dataGenerator.generateRandomBool(trueProbability: 0.7),
+        'idioma': 'es_ES',
+      },
+      'biografia': dataGenerator.generateRandomLoremIpsum(minWords: 30, maxWords: 100),
+    };
+  },
 );
 ```
 
