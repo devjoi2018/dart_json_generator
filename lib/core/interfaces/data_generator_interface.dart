@@ -29,4 +29,44 @@ abstract class DataGeneratorInterface {
 
   /// Genera una dirección IP aleatoria (IPv4 o IPv6)
   String generateRandomIpAddress({bool ipv6 = false});
+
+  /// Genera coordenadas geográficas aleatorias [latitud, longitud]
+  Map<String, double> generateRandomGeoCoordinates({
+    double minLat = -90.0,
+    double maxLat = 90.0,
+    double minLong = -180.0,
+    double maxLong = 180.0,
+  });
+
+  /// Genera un código postal aleatorio (formato específico del país)
+  String generateRandomPostalCode({String countryCode = 'ES'});
+
+  /// Genera una dirección completa aleatoria
+  Map<String, String> generateRandomAddress({String? countryCode});
+
+  /// Genera un número de teléfono aleatorio (formato específico del país)
+  String generateRandomPhoneNumber({String countryCode = 'ES', bool withPrefix = false});
+
+  /// Genera un color aleatorio en formato hexadecimal
+  String generateRandomColor({bool withAlpha = false});
+
+  /// Genera un nombre de usuario aleatorio
+  String generateRandomUsername();
+
+  /// Genera una contraseña aleatoria con opciones de complejidad
+  String generateRandomPassword({
+    int length = 12,
+    bool includeUppercase = true,
+    bool includeNumbers = true,
+    bool includeSpecialChars = true,
+  });
+
+  /// Genera un identificador único aleatorio (UUID)
+  String generateRandomUUID();
+
+  /// Genera URLs aleatorias por categoría
+  String generateRandomUrl({String category = 'web'});
+
+  /// Genera un párrafo de texto aleatorio (lorem ipsum)
+  String generateRandomLoremIpsum({int minWords = 50, int maxWords = 200});
 }
