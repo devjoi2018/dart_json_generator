@@ -1,0 +1,28 @@
+{
+  "outputPath": "./output",
+  "defaultRecordCount": 3,
+  "jsonIndent": "    ",
+  "addTimestampToFiles": true,
+  "dates": {
+    "format": "shortDate",
+    "customFormat": "yyyy-MM-dd HH:mm:ss",
+    "timeZone": "UTC"
+  },
+  "generation": {
+    "type": "realistic",
+    "seed": null,
+    "enableCache": true
+  },
+  "files": {
+    "extension": "json",
+    "encoding": "utf-8",
+    "defaultSingleName": "object",
+    "defaultListName": "list",
+    "maxSize": 10485760
+  },
+  "logging": {
+    "level": "debug",
+    "toFile": true,
+    "toConsole": true
+  }
+}
