@@ -1,82 +1,284 @@
-<center><h1><b>Dart JSON Generator</b></h1></center>
-<center>Versión v1.1.1</center>
-<br></br>
+# 🚀 **Dart JSON Generator**
 
-Dart JSON Generator es una herramienta que permite generar archivos JSON a partir de **mapas** como modelos de datos en el lenguaje Dart en su version **v2.18.2** o superior.
-<br></br>
+<div align="center">
+  <h3>Versión v1.1.1</h3>
+  <p>Una herramienta potente para generar archivos JSON con datos aleatorios o personalizados</p>
+</div>
 
-# **¿Como funciona?**
+---
 
-Primero debes instalar el SDK de Dart en tu equipo Mac, Linux o Windows. Puedes descargarlo desde [aquí](https://dart.dev/get-dart).
+## 📋 **Índice**
 
-    Nota: Si eres desarrollador Flutter, Dart ya viene instalado en tu equipo.
+- [Descripción](#-descripción)
+- [Requisitos](#-requisitos)
+- [Instalación](#-instalación)
+- [Uso Básico](#-uso-básico)
+- [Opciones de Configuración](#-opciones-de-configuración)
+- [Generación de Datos Aleatorios](#-generación-de-datos-aleatorios)
+- [Ejemplos Avanzados](#-ejemplos-avanzados)
+- [Personalización](#-personalización)
 
-Luego de instalar Dart, en la terminal de tu IDE de preferencia, debes ejecutar el siguiente comando:
+---
 
-    > dart run
+## 📝 **Descripción**
 
-## Crear modelos de datos
+Dart JSON Generator es una herramienta robusta que permite generar archivos JSON a partir de mapas de datos en Dart. Soporta generación de datos aleatorios, configuraciones personalizables y múltiples formatos de salida.
 
-Para crear un modelo de datos debes hacerlo dentro del archivo principal ```bin/generador_de_json.dart```, puedes llamar al metodo ```generateJson.generateJson()``` y en su parametro **jsonMap** debes pasarle un **mapa** con los datos que deseas convertir a JSON como en el siguiente ejemplo:
+---
+
+## 💻 **Requisitos**
+
+- Dart SDK v2.18.2 o superior
+- Cualquier sistema operativo: Windows, macOS o Linux
+
+> 💡 **Nota**: Si ya tienes Flutter instalado, ¡Dart ya está disponible en tu sistema!
+
+---
+
+## 🔧 **Instalación**
+
+1. Clona el repositorio:
+
+   ```bash
+   git clone https://github.com/devjoi2018/dart_json_generator.git
+   cd dart_json_generator
+   ```
+
+2. Instala las dependencias:
+   ```bash
+   dart pub get
+   ```
+
+---
+
+## 🚀 **Uso Básico**
+
+Para ejecutar el generador con la configuración predeterminada:
+
+```bash
+dart run bin/generador_de_json.dart
+```
+
+Esto creará archivos JSON de ejemplo en la carpeta `examples/`.
+
+---
+
+## ⚙️ **Opciones de Configuración**
+
+Dart JSON Generator ofrece una amplia gama de opciones configurables a través de argumentos en la línea de comandos, permitiéndote personalizar completamente la generación de archivos JSON:
+
+### 📂 **Opciones de salida**
+
+| Argumento                   | Descripción                                                                  | Valor predeterminado  | Ejemplo            |
+| --------------------------- | ---------------------------------------------------------------------------- | --------------------- | ------------------ |
+| `--output=<ruta>`           | Directorio donde se guardarán los archivos JSON generados                    | `./examples`          | `--output=./datos` |
+| `--timestamp`               | Agrega una marca de tiempo al nombre del archivo para evitar sobreescrituras | `false`               | `--timestamp`      |
+| `--indent=<texto>`          | Cadena de texto usada para la indentación del JSON                           | Dos espacios (`"  "`) | `--indent="    "`  |
+| `--ext=<extensión>`         | Extensión de los archivos generados                                          | `json`                | `--ext=json`       |
+| `--encoding=<codificación>` | Codificación de caracteres para los archivos                                 | `utf-8`               | `--encoding=utf-8` |
+| `--maxsize=<MB>`            | Tamaño máximo del archivo en megabytes                                       | `10` (10MB)           | `--maxsize=20`     |
+
+**Nota importante**: Por defecto, todos los archivos se generan en la carpeta `./examples` según la configuración base. Esta ruta puede cambiarse temporalmente con el argumento `--output` o permanentemente modificando el valor `outputPath` en el archivo de configuración.
+
+### 🧩 **Opciones de generación de datos**
+
+| Argumento                | Descripción                                                                 | Valor predeterminado | Ejemplo                |
+| ------------------------ | --------------------------------------------------------------------------- | -------------------- | ---------------------- |
+| `--records=<número>`     | Cantidad de registros a generar en listas                                   | `5`                  | `--records=100`        |
+| `--seed=<número>`        | Semilla para la generación de datos aleatorios (garantiza reproducibilidad) | Aleatorio            | `--seed=42`            |
+| `--gentype=<tipo>`       | Tipo de generación de datos (`fully_random`, `consistent`, `realistic`)     | `realistic`          | `--gentype=consistent` |
+| `--cache` / `--no-cache` | Activar/desactivar caché para mejorar rendimiento                           | `true`               | `--no-cache`           |
+
+### 📅 **Opciones de formato de fecha**
+
+| Argumento                     | Descripción                                       | Valor predeterminado  | Ejemplo                           |
+| ----------------------------- | ------------------------------------------------- | --------------------- | --------------------------------- |
+| `--dateformat=<formato>`      | Formato de fecha a usar                           | `iso8601`             | `--dateformat=shortDate`          |
+| `--customdateformat=<patrón>` | Patrón personalizado cuando se usa `customFormat` | `yyyy-MM-dd HH:mm:ss` | `--customdateformat="dd/MM/yyyy"` |
+| `--timezone=<zona>`           | Zona horaria para las fechas generadas            | `UTC`                 | `--timezone=CET`                  |
+
+### 📊 **Opciones de logging**
+
+| Argumento            | Descripción                                                     | Valor predeterminado | Ejemplo           |
+| -------------------- | --------------------------------------------------------------- | -------------------- | ----------------- |
+| `--loglevel=<nivel>` | Nivel de logging (`debug`, `info`, `warning`, `error`, `fatal`) | `debug`              | `--loglevel=info` |
+
+### 🧪 **Ejemplos prácticos**
+
+```bash
+# Generar 50 registros en formato JSON con indentación de 4 espacios
+dart run bin/generador_de_json.dart --records=50 --indent="    "
+
+# Generar datos con formato de fecha completo y marca de tiempo
+dart run bin/generador_de_json.dart --dateformat=longDate --timestamp
+
+# Configuración para desarrollo: registros reducidos y logging mínimo
+dart run bin/generador_de_json.dart --records=3 --loglevel=info --output=./dev
+
+# Configuración para pruebas reproducibles
+dart run bin/generador_de_json.dart --seed=12345 --gentype=consistent --no-cache
+
+# Generar archivos JSON con configuración completa
+dart run bin/generador_de_json.dart --output=./data --records=100 --indent="  " --timestamp --dateformat=shortDate --loglevel=info --seed=42 --gentype=realistic --maxsize=5
+```
+
+> 💡 **Consejo**: Puedes combinar tantos argumentos como necesites para personalizar completamente la generación de tus archivos JSON.
+
+---
+
+## 🎲 **Generación de Datos Aleatorios**
+
+El generador incluye múltiples utilidades para crear datos aleatorios realistas:
+
+### 👤 Datos personales:
 
 ```dart
-generateJson.generateJson(
-    jsonName: 'example',
-    jsonMap: <String, dynamic>{
-        ¨id¨: 1,
-        ¨name¨: ¨John Doe¨,
-        ¨age¨: 25,
-        ¨isDeveloper¨: true,
-    }
+// Nombres y apellidos
+dataGenerator.generateRandomMaleName(isFullName: true)
+dataGenerator.generateRandomFemaleName(isFullName: false)
+dataGenerator.generateRandomFemaleOrMaleName(isFullName: true)
+
+// Contacto
+dataGenerator.generateRandomEmail()
+dataGenerator.generateRandomAvatarUrl()
+```
+
+### 📊 Datos numéricos y booleanos:
+
+```dart
+dataGenerator.generateRandomInt(min: 1, max: 100)
+dataGenerator.generateRandomDouble(min: 0.0, max: 10.0, decimals: 2)
+dataGenerator.generateRandomBool(trueProbability: 0.7)
+```
+
+### 📅 Fechas y horas:
+
+```dart
+dataGenerator.generateRandomDate(
+  from: DateTime(2020, 1, 1),
+  to: DateTime.now(),
+  format: 'shortDate'
+)
+```
+
+### 🌐 Datos de red:
+
+```dart
+dataGenerator.generateRandomIpAddress(ipv6: false)
+```
+
+---
+
+## 📋 **Ejemplos Avanzados**
+
+### Generación de objeto simple:
+
+```dart
+jsonGenerator.generateJson(
+  jsonName: 'usuario',
+  jsonMap: (Map<String, dynamic> data) {
+    return <String, dynamic>{
+      'id': 1,
+      'nombre': dataGenerator.generateRandomFemaleOrMaleName(isFullName: true),
+      'email': dataGenerator.generateRandomEmail(),
+      'avatar': dataGenerator.generateRandomAvatarUrl(),
+      'fechaNacimiento': dataGenerator.generateRandomDate(),
+      'activo': dataGenerator.generateRandomBool(),
+      'puntuacion': dataGenerator.generateRandomDouble(min: 0, max: 5, decimals: 1),
+    };
+  },
 );
 ```
-El parametro **jsonName** es el nombre del archivo JSON que se generará, en este caso el archivo se llamará **example.json** y se almacenara en la carpeta ```lib/example.json```.
 
-Para generar un archivo JSON con un **array** de objetos debes hacerlo de la siguiente manera:
+### Generación de lista de objetos:
 
 ```dart
-generateJson.generateJsonList(
-    jsonName: 'test_data',
-    jsonMap: (data) {
-      return List.generate(
-        100, // Cantidad de objetos que se generaran
-        (index) => <String, dynamic>{
-          'id': index,
-          'name': util.generateRandomFemaleOrMaleName(),
-          'lastName': util.generateRandomLastName(),
-          'email': util.generateRandomEmail(),
-          'avatar': util.generateRandomAvatarUrl(),
-          'phone': util.generateRandomPhoneNumber(),
-          'isShared': util.generateRandomBool(),
-        },
-      );
-    },
-  );
+jsonGenerator.generateJsonList(
+  jsonName: 'usuarios',
+  jsonMap: (List<Map<String, dynamic>> data) {
+    return List.generate(
+      app.config.defaultRecordCount,
+      (index) => <String, dynamic>{
+        'id': index,
+        'nombre': dataGenerator.generateRandomFemaleOrMaleName(isFullName: true),
+        'email': dataGenerator.generateRandomEmail(),
+        'avatar': dataGenerator.generateRandomAvatarUrl(),
+        'fechaRegistro': dataGenerator.generateRandomDate(
+          from: DateTime(2020, 1, 1),
+          to: DateTime.now(),
+          format: 'longDate'
+        ),
+        'ipAcceso': dataGenerator.generateRandomIpAddress(),
+      },
+    );
+  },
+  addIdAutoincrement: true,
+);
 ```
 
-En este ejemplo se generará un archivo JSON con 100 objetos con los datos de una persona, también en el ejemplo se esta haciendo uso de la instancia **util** que es una clase que contiene metodos preestablecidos que generan datos aleatorios como nombres, apellidos, correos, etc.
+---
 
-Si quieres generar tus propios metodos preestablecidos puedes hacerlo editando el archivo ```lib/utils/all_utils.dart```.
+## 🛠️ **Personalización**
 
-Algunos de los metodos preestablecidos de los que puedes hacer uso son:
+### Archivo de configuración
 
-- ```generateRandomBool()```
-    - Genera un valor booleano aleatorio.
-- ```generateRandomMaleName()```
-    - Genera un nombre masculino sin apellido aleatorio, pero si el parametro **isFullName** es **true** genera un nombre completo.
-- ```generateRandomFemaleName()```
-    - Genera un nombre femenino sin apellido aleatorio, pero si el parametro **isFullName** es **true** genera un nombre completo.
-- ```generateRandomFemaleOrMaleName()```
-    - Genera un nombre aleatorio masculino o femenino sin apellido, pero si el parametro **isFullName** es **true** genera un nombre completo.
-- ```generateRandomEmail()```
-    - Genera un correo electronico aleatorio.
-- ```generateRandomAvatarUrl()```
-    - Genera una url de una imagen aleatoria masculino o femenino.
-- ```generateRandomMaleAvatarUrl()```
-    - Genera una url de una imagen masculina aleatoria.
-- ```generateRandomFemaleAvatarUrl()```
-    - Genera una url de una imagen femenina aleatoria.
-- ```generateRandomPhoneNumber()``` 
-    - Genera un numero de telefono aleatorio.
-- ```generateRandomLastName()```
-    - Genera un apellido aleatorio.
+Puedes personalizar la configuración predeterminada editando el archivo `config/config.json`:
+
+```json
+{
+  "outputPath": "./examples",
+  "defaultRecordCount": 5,
+  "jsonIndent": "  ",
+  "addTimestampToFiles": true,
+  "dates": {
+    "format": "iso8601",
+    "customFormat": "yyyy-MM-dd HH:mm:ss",
+    "timeZone": "UTC"
+  },
+  "generation": {
+    "type": "realistic",
+    "seed": null,
+    "enableCache": true
+  },
+  "files": {
+    "extension": "json",
+    "encoding": "utf-8",
+    "maxSize": 10485760
+  },
+  "logging": {
+    "level": "debug",
+    "toFile": true,
+    "toConsole": true
+  }
+}
+```
+
+**Ubicación de archivos generados**: El valor `outputPath` determina dónde se guardarán los archivos JSON. Por defecto, los archivos se generan en la carpeta `./examples`. Puedes cambiar esta ubicación de dos formas:
+
+1. **Cambio permanente**: Edita el valor `outputPath` en el archivo `config/config.json`.
+2. **Cambio temporal**: Utiliza el parámetro `--output` al ejecutar el programa:
+   ```bash
+   dart run bin/generador_de_json.dart --output=./mi_carpeta_personalizada
+   ```
+
+Los cambios en el archivo de configuración son permanentes, mientras que los parámetros de línea de comandos solo afectan a la ejecución actual.
+
+### Formatos de fecha disponibles:
+
+- `iso8601`: Formato ISO estándar (2023-04-15T10:30:00)
+- `shortDate`: Formato corto (15/04/2023)
+- `longDate`: Formato largo (15 de abril de 2023)
+- `timeOnly`: Solo hora (10:30:00)
+- `usFormat`: Formato estadounidense (04/15/2023)
+- `customFormat`: Formato personalizado definido en "customFormat"
+
+---
+
+## 🔄 **Próximas funcionalidades**
+
+- Soporte para diferentes formatos de salida (YAML, XML)
+- Validación de esquemas JSON
+- Generación asíncrona para archivos grandes
+- Interfaz de línea de comandos mejorada
+
+---
