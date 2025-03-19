@@ -121,6 +121,10 @@ class AppConfig {
   String schemaFormat = 'json-schema';
   bool validateWithSchema = false;
 
+  /// Configuración de compresión de archivos
+  bool enableCompression = false;
+  String compressionFormat = 'gzip';
+
   /// Carga la configuración desde el archivo
   void loadConfig() {
     try {
@@ -202,6 +206,7 @@ class AppConfig {
       },
       'logging': {'level': logLevel, 'toFile': logToFile, 'toConsole': logToConsole},
       'schemas': {'format': schemaFormat, 'validate': validateWithSchema},
+      'compression': {'enabled': enableCompression, 'format': compressionFormat},
     };
   }
 
@@ -274,6 +279,19 @@ class AppConfig {
         }
         if (schemas.containsKey('validate')) {
           validateWithSchema = schemas['validate'] as bool;
+        }
+      }
+    }
+
+    // Cargar configuración de compresión
+    if (configMap.containsKey('compression')) {
+      final compression = configMap['compression'];
+      if (compression is Map<String, dynamic>) {
+        if (compression.containsKey('enabled')) {
+          enableCompression = compression['enabled'] as bool;
+        }
+        if (compression.containsKey('format')) {
+          compressionFormat = compression['format'] as String;
         }
       }
     }
