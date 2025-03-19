@@ -1,8 +1,11 @@
 import 'dart:io';
+import 'dart:convert';
 
 import 'package:generador_de_json/core/exceptions/exceptions.dart';
 import 'package:generador_de_json/core/utils/logger.dart';
 import 'package:path/path.dart' as path;
+import 'package:generador_de_json/app.dart';
+import 'package:generador_de_json/core/compressors/compressor_registry.dart';
 
 /// Utilidades para operaciones con archivos
 class FileUtils {
@@ -169,6 +172,12 @@ class FileUtils {
       // Escribir el archivo
       final file = writeFile(outputPath, content);
 
+      // Verificar si se debe comprimir el archivo
+      final config = App().config;
+      if (config.enableCompression) {
+        return compressFile(file.path, config.compressionFormat);
+      }
+
       AppLogger.debug('Archivo guardado correctamente: ${file.path}');
       return file;
     } catch (e) {
@@ -179,6 +188,119 @@ class FileUtils {
       throw FileException.fileWriteError(
         'Error al guardar archivo $fileName',
         outputPath: path.join(directoryPath, fileName),
+        originalError: e,
+      );
+    }
+  }
+
+  /// Comprime un archivo usando el formato especificado
+  static File compressFile(String filePath, String format) {
+    try {
+      AppLogger.debug('Comprimiendo archivo: $filePath con formato: $format');
+
+      // Obtener el compresor adecuado
+      final compressorRegistry = CompressorRegistry();
+      if (!compressorRegistry.hasCompressor(format)) {
+        throw CompressionException.unsupportedFormat(format);
+      }
+
+      final compressor = compressorRegistry.getCompressor(format);
+      final fileExtension = compressor.fileExtension;
+
+      // Definir la ruta del archivo comprimido
+      final compressedPath = '$filePath.$fileExtension';
+
+      // Realizar la compresión de forma asíncrona pero esperar el resultado para mantener el API
+      final result = File(filePath).readAsBytesSync();
+      final compressedBytes = compressor.compressString(utf8.decode(result));
+
+      // Escribir el archivo comprimido
+      final compressedFile = File(compressedPath);
+      compressedFile.writeAsBytesSync(compressedBytes);
+
+      // Verificar que se creó correctamente
+      if (!compressedFile.existsSync() || compressedFile.lengthSync() == 0) {
+        throw CompressionException.compressionFailed('Error al comprimir archivo: $filePath', filePath: filePath);
+      }
+
+      AppLogger.debug('Archivo comprimido correctamente: $compressedPath');
+
+      // Eliminar el archivo original si la compresión fue exitosa
+      try {
+        File(filePath).deleteSync();
+        AppLogger.debug('Archivo original eliminado tras compresión: $filePath');
+      } catch (e) {
+        AppLogger.warning('No se pudo eliminar el archivo original tras la compresión: $filePath', e);
+      }
+
+      return compressedFile;
+    } catch (e) {
+      AppLogger.error('Error al comprimir archivo: $filePath', e, StackTrace.current);
+      if (e is BaseException) {
+        rethrow;
+      }
+      throw CompressionException.compressionFailed(
+        'Error al comprimir archivo: $filePath',
+        filePath: filePath,
+        originalError: e,
+      );
+    }
+  }
+
+  /// Descomprime un archivo usando el formato deducido de su extensión
+  static File decompressFile(String compressedFilePath) {
+    try {
+      AppLogger.debug('Descomprimiendo archivo: $compressedFilePath');
+
+      // Identificar el formato por la extensión
+      final extension = path.extension(compressedFilePath).toLowerCase();
+      if (extension.isEmpty) {
+        throw CompressionException.decompressionFailed(
+          'No se puede determinar el formato de compresión: $compressedFilePath',
+          filePath: compressedFilePath,
+        );
+      }
+
+      // Eliminar el punto inicial de la extensión
+      final format = extension.substring(1);
+
+      // Obtener el compresor adecuado
+      final compressorRegistry = CompressorRegistry();
+      if (!compressorRegistry.hasCompressor(format)) {
+        throw CompressionException.unsupportedFormat(format);
+      }
+
+      final compressor = compressorRegistry.getCompressor(format);
+
+      // Definir la ruta del archivo descomprimido (sin la extensión)
+      final originalPath = compressedFilePath.substring(0, compressedFilePath.length - extension.length);
+
+      // Realizar la descompresión
+      final compressedBytes = File(compressedFilePath).readAsBytesSync();
+      final decompressedContent = compressor.decompressToString(compressedBytes);
+
+      // Escribir el archivo descomprimido
+      final decompressedFile = File(originalPath);
+      decompressedFile.writeAsStringSync(decompressedContent);
+
+      // Verificar que se creó correctamente
+      if (!decompressedFile.existsSync()) {
+        throw CompressionException.decompressionFailed(
+          'Error al descomprimir archivo: $compressedFilePath',
+          filePath: compressedFilePath,
+        );
+      }
+
+      AppLogger.debug('Archivo descomprimido correctamente: $originalPath');
+      return decompressedFile;
+    } catch (e) {
+      AppLogger.error('Error al descomprimir archivo: $compressedFilePath', e, StackTrace.current);
+      if (e is BaseException) {
+        rethrow;
+      }
+      throw CompressionException.decompressionFailed(
+        'Error al descomprimir archivo: $compressedFilePath',
+        filePath: compressedFilePath,
         originalError: e,
       );
     }
