@@ -20,12 +20,13 @@
 - [Personalización](#-personalización)
 - [Formatos de Salida](#-formatos-de-salida)
 - [Validación de Esquemas](#-validación-de-esquemas)
+- [Compresión de Archivos](#-compresión-de-archivos)
 
 ---
 
 ## 📝 **Descripción**
 
-Dart JSON Generator es una herramienta robusta que permite generar archivos de datos a partir de mapas de datos en Dart. Soporta generación de datos aleatorios, configuraciones personalizables, múltiples formatos de salida como JSON, YAML y XML, y validación de datos contra esquemas JSON.
+Dart JSON Generator es una herramienta robusta que permite generar archivos de datos a partir de mapas de datos en Dart. Soporta generación de datos aleatorios, configuraciones personalizables, múltiples formatos de salida como JSON, YAML y XML, validación de datos contra esquemas JSON y compresión de archivos para optimizar el almacenamiento.
 
 ---
 
@@ -89,7 +90,7 @@ Dart JSON Generator ofrece una amplia gama de opciones configurables a través d
 | ------------------------ | --------------------------------------------------------------------------- | -------------------- | ---------------------- |
 | `--records=<número>`     | Cantidad de registros a generar en listas                                   | `5`                  | `--records=100`        |
 | `--seed=<número>`        | Semilla para la generación de datos aleatorios (garantiza reproducibilidad) | Aleatorio            | `--seed=42`            |
-| `--gentype=<tipo>`       | Tipo de generación de datos (`fully_random`, `consistent`, `realistic`)     | `realistic`          | `--gentype=consistent` |
+| `--gentype=<tipo>`       | Tipo de generación de datos (`fullyRandom`, `consistent`, `realistic`)      | `realistic`          | `--gentype=consistent` |
 | `--cache` / `--no-cache` | Activar/desactivar caché para mejorar rendimiento                           | `true`               | `--no-cache`           |
 
 ### 🧰 **Opciones de templates**
@@ -191,6 +192,50 @@ dart run bin/generador_de_json.dart --show-template-schema=product
 | `--validate-schema=<archivo.json>` | Esquema contra el que validar datos               | `--validate-schema=esquemas/usuario.json` |
 | `--validate-json=<archivo.json>`   | Archivo JSON a validar contra el esquema          | `--validate-json=datos/usuario.json`      |
 | `--schema-format=<formato>`        | Formato del esquema (predeterminado: json-schema) | `--schema-format=json-schema`             |
+
+### 📦 **Opciones de compresión de archivos**
+
+| Argumento                      | Descripción                                              | Valor predeterminado | Ejemplo                   |
+| ------------------------------ | -------------------------------------------------------- | -------------------- | ------------------------- |
+| `--compress` / `--no-compress` | Activa/desactiva la compresión de los archivos generados | `false`              | `--compress`              |
+| `--compress-format=<formato>`  | Formato de compresión a utilizar                         | `gzip`               | `--compress-format=gzip`  |
+| `--list-compress-formats`      | Muestra la lista de formatos de compresión disponibles   | -                    | `--list-compress-formats` |
+
+### 🧪 **Ejemplos prácticos**
+
+```bash
+# Generar 50 registros en formato JSON con indentación de 4 espacios
+dart run bin/generador_de_json.dart --records=50 --indent="    "
+
+# Generar datos con formato de fecha completo y marca de tiempo
+dart run bin/generador_de_json.dart --dateformat=longDate --timestamp
+
+# Configuración para desarrollo: registros reducidos y logging mínimo
+dart run bin/generador_de_json.dart --records=3 --loglevel=info --output=./dev
+
+# Configuración para pruebas reproducibles
+dart run bin/generador_de_json.dart --seed=12345 --gentype=consistent --no-cache
+
+# Generar archivos JSON con configuración completa
+dart run bin/generador_de_json.dart --output=./data --records=100 --indent="  " --timestamp --dateformat=shortDate --loglevel=info --seed=42 --gentype=realistic --maxsize=5
+
+# Listar templates disponibles
+dart run bin/generador_de_json.dart --list-templates
+
+# Generar datos usando un template específico
+dart run bin/generador_de_json.dart --template=user --records=10
+
+# Ver el esquema de un template
+dart run bin/generador_de_json.dart --show-template-schema=product
+
+# Generar archivos y comprimirlos automáticamente con gzip
+dart run bin/generador_de_json.dart --compress
+
+# Verificar formatos de compresión disponibles
+dart run bin/generador_de_json.dart --list-compress-formats
+```
+
+> 💡 **Consejo**: Puedes combinar tantos argumentos como necesites para personalizar completamente la generación de tus archivos JSON.
 
 ---
 
@@ -323,6 +368,14 @@ Puedes personalizar la configuración predeterminada editando el archivo `config
     "level": "debug",
     "toFile": true,
     "toConsole": true
+  },
+  "schemas": {
+    "format": "json-schema",
+    "validate": false
+  },
+  "compression": {
+    "enabled": false,
+    "format": "gzip"
   }
 }
 ```
@@ -508,15 +561,6 @@ dart run bin/generador_de_json.dart --template=user --format=xml
 
 ---
 
-## 🔄 **Próximas funcionalidades**
-
-- ~Soporte para diferentes formatos de salida (YAML, XML)~ ✓ Implementado!
-- ~Validación de esquemas JSON~ ✓ Implementado!
-- Generación asíncrona para archivos grandes
-- Interfaz de línea de comandos mejorada
-
----
-
 ## 🔍 **Validación de Esquemas**
 
 Dart JSON Generator incluye potentes capacidades de validación de esquemas que te permiten:
@@ -589,5 +633,73 @@ Un esquema típico para un objeto usuario podría verse así:
 ```
 
 Este esquema define un objeto con propiedades de diferentes tipos y especifica cuáles son obligatorias.
+
+---
+
+## 📦 **Compresión de Archivos**
+
+Dart JSON Generator incluye capacidades de compresión de archivos para reducir el tamaño de los archivos generados y optimizar el almacenamiento.
+
+### Activar la compresión
+
+La compresión está desactivada por defecto. Puedes activarla de dos formas:
+
+1. **Temporalmente** mediante el argumento de línea de comandos:
+
+   ```bash
+   dart run bin/generador_de_json.dart --compress
+   ```
+
+2. **Permanentemente** editando el archivo de configuración `config/config.json`:
+   ```json
+   "compression": {
+     "enabled": true,
+     "format": "gzip"
+   }
+   ```
+
+### Formatos de compresión soportados
+
+Actualmente se soporta el siguiente formato de compresión:
+
+- `gzip`: Un formato de compresión ampliamente utilizado, compatible con la mayoría de sistemas
+
+Para especificar el formato de compresión a utilizar:
+
+```bash
+dart run bin/generador_de_json.dart --compress --compress-format=gzip
+```
+
+### Ver formatos disponibles
+
+Para listar todos los formatos de compresión disponibles:
+
+```bash
+dart run bin/generador_de_json.dart --list-compress-formats
+```
+
+### Funcionamiento
+
+Cuando la compresión está activada:
+
+1. El archivo se genera normalmente en el formato especificado (JSON, YAML, XML)
+2. Se comprime utilizando el algoritmo configurado
+3. El archivo original se elimina, dejando solo la versión comprimida
+4. La extensión del formato de compresión se añade al nombre del archivo (ej: `.json.gz`)
+
+### Ejemplos de uso
+
+```bash
+# Generar y comprimir archivos con template de usuario
+dart run bin/generador_de_json.dart --template=user --compress
+
+# Generar datos en formato XML y comprimirlos
+dart run bin/generador_de_json.dart --format=xml --compress
+
+# Configuración completa con compresión
+dart run bin/generador_de_json.dart --records=100 --timestamp --format=json --compress
+```
+
+> 💡 **Nota**: La compresión funciona con cualquier formato de salida (JSON, YAML, XML), permitiendo reducir significativamente el tamaño de los archivos generados sin perder información.
 
 ---
