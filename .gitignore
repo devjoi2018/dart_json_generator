@@ -1,6 +1,54 @@
 # Files and directories created by pub.
 .dart_tool/
 .packages
+.pub/
+pubspec.lock
 
 # Conventional directory for build output.
 build/
+
+# Plan de mejoras interno
+PLAN_DE_MEJORAS.md
+
+# Logs y archivos temporales
+logs/
+*.log
+.log/
+tmp/
+.tmp/
+temp/
+
+# Archivos generados (ejemplos)
+examples/*.json
+output/
+./output/
+
+# Archivos de configuración local que pueden variar entre desarrolladores
+config/config.local.json
+
+# Archivos de IDE/editores
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.DS_Store
+.project
+.settings/
+.classpath
+
+# Archivos de coverage
+coverage/
+.coverage/
+.test-results/
+
+# Archivos específicos de Flutter
+.flutter-plugins
+.flutter-plugins-dependencies
+**/ios/Flutter/.last_build_id
+**/ios/Pods/
+**/android/.gradle/
+**/android/gradlew
+**/android/gradlew.bat
+**/android/local.properties
+**/android/key.properties
