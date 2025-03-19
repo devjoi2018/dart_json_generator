@@ -6,6 +6,7 @@ import 'package:generador_de_json/core/exceptions/exceptions.dart';
 import 'package:generador_de_json/core/utils/logger.dart';
 import 'package:generador_de_json/core/utils/validators.dart';
 import 'package:generador_de_json/core/formatters/formatter_registry.dart';
+import 'package:generador_de_json/core/compressors/compressor_registry.dart';
 import 'package:generador_de_json/features/json_generator/generate_json.dart';
 
 /// Ejecuta la aplicación con los argumentos proporcionados
@@ -69,6 +70,12 @@ void main(List<String> arguments) {
       final schemaFile = parsedArgs['validate_schema'];
       final jsonFile = parsedArgs.containsKey('validate_json') ? parsedArgs['validate_json'] : null;
       _validateJsonAgainstSchema(app, schemaFile, jsonFile);
+      return;
+    }
+
+    // Verificar si se solicitó listar formatos de compresión
+    if (parsedArgs.containsKey('list_compress_formats') && parsedArgs['list_compress_formats'] == true) {
+      _listAvailableCompressFormats(app);
       return;
     }
 
@@ -218,6 +225,18 @@ void _updateConfigFromArgs(AppConfig config, Map<String, dynamic> args) {
   if (args.containsKey('gentype')) {
     config.dataGenerationType = args['gentype'] as String;
     AppLogger.info('Tipo de generación de datos actualizado: ${config.dataGenerationType}');
+  }
+
+  // Configuración de compresión
+  if (args.containsKey('compress')) {
+    config.enableCompression = args['compress'] as bool;
+    AppLogger.info('Compresión de archivos ${config.enableCompression ? "habilitada" : "deshabilitada"}');
+  }
+
+  // Formato de compresión
+  if (args.containsKey('compress_format')) {
+    config.compressionFormat = args['compress_format'] as String;
+    AppLogger.info('Formato de compresión actualizado: ${config.compressionFormat}');
   }
 
   // Configuración de semilla para datos aleatorios
@@ -445,6 +464,23 @@ Map<String, dynamic> validateArguments(List<String> arguments) {
         parsedArgs['template'] = value;
         AppLogger.debug('Argumento template: $value');
       }
+    } else if (arg == '--compress') {
+      // Habilitar compresión de archivos
+      parsedArgs['compress'] = true;
+      AppLogger.debug('Compresión de archivos habilitada');
+    } else if (arg == '--no-compress') {
+      // Deshabilitar compresión de archivos
+      parsedArgs['compress'] = false;
+      AppLogger.debug('Compresión de archivos deshabilitada');
+    } else if (arg.startsWith('--compress-format=')) {
+      // Formato de compresión a utilizar
+      final value = arg.substring('--compress-format='.length).toLowerCase();
+      parsedArgs['compress_format'] = value;
+      AppLogger.debug('Formato de compresión: $value');
+    } else if (arg == '--list-compress-formats') {
+      // Listar formatos de compresión disponibles
+      parsedArgs['list_compress_formats'] = true;
+      AppLogger.debug('Listando formatos de compresión disponibles');
     } else if (arg.startsWith('--show-template-schema=')) {
       // Mostrar esquema de un template
       final value = arg.substring('--show-template-schema='.length);
@@ -552,6 +588,12 @@ Opciones de templates:
 --validate-schema=<archivo.json>  : Esquema para validar datos
 --validate-json=<archivo.json>    : Archivo JSON a validar contra esquema
 --schema-format=<formato>         : Formato del esquema (predeterminado: json-schema)
+
+📦 Opciones de compresión:
+--------------------------
+--compress, --no-compress         : Habilita o deshabilita la compresión de archivos
+--compress-format=<formato>       : Formato de compresión (gzip)
+--list-compress-formats           : Listar formatos de compresión disponibles
 ''';
 
   print(help);
@@ -874,5 +916,31 @@ dynamic _generateExampleValue(Map<String, dynamic> propSchema) {
 
     default:
       return null;
+  }
+}
+
+/// Implementar función para listar formatos de compresión
+void _listAvailableCompressFormats(App app) {
+  try {
+    AppLogger.debug('Listando formatos de compresión disponibles');
+
+    // Importar las clases necesarias
+    final compressorRegistry = CompressorRegistry();
+    final formatNames = compressorRegistry.getAvailableCompressorNames();
+    final extensions = compressorRegistry.getSupportedExtensions();
+
+    print('\nFormatos de compresión disponibles:');
+    print('=====================');
+
+    for (var i = 0; i < formatNames.length; i++) {
+      final format = formatNames[i];
+      final extension = extensions[i];
+      print('- $format: Extensión .$extension');
+    }
+
+    print('\nPara usar: --compress --compress-format=<formato>');
+  } catch (e) {
+    AppLogger.error('Error al listar formatos de compresión disponibles', e, StackTrace.current);
+    print('Error al listar formatos de compresión disponibles: $e');
   }
 }
