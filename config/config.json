@@ -20,6 +20,12 @@
     "defaultListName": "list",
     "maxSize": 10485760
   },
+  "templates": {
+    "directory": "templates",
+    "defaultTemplate": "",
+    "validateData": true,
+    "allowWithoutTemplate": true
+  },
   "logging": {
     "level": "debug",
     "toFile": true,
