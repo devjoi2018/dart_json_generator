@@ -10,6 +10,7 @@ import 'package:generador_de_json/core/utils/logger.dart';
 import 'package:generador_de_json/core/utils/validators.dart';
 import 'package:generador_de_json/features/json_generator/generate_json.dart';
 import 'package:generador_de_json/features/json_generator/json_generator_module.dart';
+import 'package:generador_de_json/core/schema/schema_validator_registry.dart';
 
 /// Clase principal de la aplicación
 class App {
@@ -67,6 +68,9 @@ class App {
       // Registra los módulos principales
       _registerCoreModules();
 
+      // Registrar validadores de esquema
+      _initializeSchemaValidators();
+
       // Inicializa todos los módulos registrados
       _moduleRegistry.initializeModules();
 
@@ -111,6 +115,22 @@ class App {
         rethrow;
       }
       throw AppException.moduleRegistrationError('Error al registrar módulos principales', originalError: e);
+    }
+  }
+
+  /// Inicializa los validadores de esquema
+  void _initializeSchemaValidators() {
+    try {
+      AppLogger.debug('Inicializando validadores de esquema');
+      // El constructor de SchemaValidatorRegistry ya registra los validadores predeterminados
+      SchemaValidatorRegistry();
+      AppLogger.debug('Validadores de esquema inicializados');
+    } catch (e) {
+      AppLogger.error('Error al inicializar validadores de esquema', e, StackTrace.current);
+      throw AppException.initializationError(
+        'Error al inicializar validadores de esquema: ${e.toString()}',
+        originalError: e,
+      );
     }
   }
 
@@ -181,6 +201,39 @@ class App {
   /// Obtiene la lista de nombres de templates disponibles
   List<String> getAvailableTemplates() {
     return templateModule.templateManager.getAvailableTemplates();
+  }
+
+  /// Obtiene la lista de formatos de esquema de validación disponibles
+  List<String> getAvailableSchemaFormats() {
+    try {
+      final registry = SchemaValidatorRegistry();
+      return registry.getAvailableFormats();
+    } catch (e) {
+      AppLogger.error('Error al obtener formatos de esquema disponibles', e, StackTrace.current);
+      return [];
+    }
+  }
+
+  /// Valida un objeto contra un esquema
+  bool validateSchema(dynamic data, dynamic schema, {String format = 'json-schema'}) {
+    try {
+      final registry = SchemaValidatorRegistry();
+      return registry.validate(data, schema, format);
+    } catch (e) {
+      AppLogger.error('Error en validación de esquema', e, StackTrace.current);
+      rethrow;
+    }
+  }
+
+  /// Genera un esquema a partir de una estructura de datos
+  dynamic generateSchema(Map<String, dynamic> structure, {String format = 'json-schema'}) {
+    try {
+      final registry = SchemaValidatorRegistry();
+      return registry.generateSchema(structure, format);
+    } catch (e) {
+      AppLogger.error('Error al generar esquema', e, StackTrace.current);
+      rethrow;
+    }
   }
 
   /// Valida que la aplicación esté inicializada
