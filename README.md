@@ -1,7 +1,7 @@
 # 🚀 **Dart JSON Generator**
 
 <div align="center">
-  <h3>Versión v1.1.1</h3>
+  <h3>Versión v1.2.0</h3>
   <p>Una herramienta potente para generar archivos JSON con datos aleatorios o personalizados</p>
 </div>
 
@@ -14,6 +14,7 @@
 - [Instalación](#-instalación)
 - [Uso Básico](#-uso-básico)
 - [Opciones de Configuración](#-opciones-de-configuración)
+- [Sistema de Templates](#-sistema-de-templates)
 - [Generación de Datos Aleatorios](#-generación-de-datos-aleatorios)
 - [Ejemplos Avanzados](#-ejemplos-avanzados)
 - [Personalización](#-personalización)
@@ -59,7 +60,7 @@ Para ejecutar el generador con la configuración predeterminada:
 dart run bin/generador_de_json.dart
 ```
 
-Esto creará archivos JSON de ejemplo en la carpeta `examples/`.
+Esto creará archivos JSON de ejemplo en la carpeta `output/`.
 
 ---
 
@@ -71,14 +72,14 @@ Dart JSON Generator ofrece una amplia gama de opciones configurables a través d
 
 | Argumento                   | Descripción                                                                  | Valor predeterminado  | Ejemplo            |
 | --------------------------- | ---------------------------------------------------------------------------- | --------------------- | ------------------ |
-| `--output=<ruta>`           | Directorio donde se guardarán los archivos JSON generados                    | `./examples`          | `--output=./datos` |
+| `--output=<ruta>`           | Directorio donde se guardarán los archivos JSON generados                    | `./output`            | `--output=./datos` |
 | `--timestamp`               | Agrega una marca de tiempo al nombre del archivo para evitar sobreescrituras | `false`               | `--timestamp`      |
 | `--indent=<texto>`          | Cadena de texto usada para la indentación del JSON                           | Dos espacios (`"  "`) | `--indent="    "`  |
 | `--ext=<extensión>`         | Extensión de los archivos generados                                          | `json`                | `--ext=json`       |
 | `--encoding=<codificación>` | Codificación de caracteres para los archivos                                 | `utf-8`               | `--encoding=utf-8` |
 | `--maxsize=<MB>`            | Tamaño máximo del archivo en megabytes                                       | `10` (10MB)           | `--maxsize=20`     |
 
-**Nota importante**: Por defecto, todos los archivos se generan en la carpeta `./examples` según la configuración base. Esta ruta puede cambiarse temporalmente con el argumento `--output` o permanentemente modificando el valor `outputPath` en el archivo de configuración.
+**Nota importante**: Por defecto, todos los archivos se generan en la carpeta `./output` según la configuración base. Esta ruta puede cambiarse temporalmente con el argumento `--output` o permanentemente modificando el valor `outputPath` en el archivo de configuración.
 
 ### 🧩 **Opciones de generación de datos**
 
@@ -88,6 +89,15 @@ Dart JSON Generator ofrece una amplia gama de opciones configurables a través d
 | `--seed=<número>`        | Semilla para la generación de datos aleatorios (garantiza reproducibilidad) | Aleatorio            | `--seed=42`            |
 | `--gentype=<tipo>`       | Tipo de generación de datos (`fully_random`, `consistent`, `realistic`)     | `realistic`          | `--gentype=consistent` |
 | `--cache` / `--no-cache` | Activar/desactivar caché para mejorar rendimiento                           | `true`               | `--no-cache`           |
+
+### 🧰 **Opciones de templates**
+
+| Argumento                         | Descripción                                      | Ejemplo                          |
+| --------------------------------- | ------------------------------------------------ | -------------------------------- |
+| `--list-templates`                | Muestra la lista de templates disponibles        | `--list-templates`               |
+| `--template=<nombre>`             | Especifica el template a utilizar                | `--template=user`                |
+| `--show-template-schema=<nombre>` | Muestra el esquema de un template específico     | `--show-template-schema=product` |
+| `--validate` / `--no-validate`    | Activar/desactivar validación contra el template | `--validate`                     |
 
 ### 📅 **Opciones de formato de fecha**
 
@@ -120,6 +130,15 @@ dart run bin/generador_de_json.dart --seed=12345 --gentype=consistent --no-cache
 
 # Generar archivos JSON con configuración completa
 dart run bin/generador_de_json.dart --output=./data --records=100 --indent="  " --timestamp --dateformat=shortDate --loglevel=info --seed=42 --gentype=realistic --maxsize=5
+
+# Listar templates disponibles
+dart run bin/generador_de_json.dart --list-templates
+
+# Generar datos usando un template específico
+dart run bin/generador_de_json.dart --template=user --records=10
+
+# Ver el esquema de un template
+dart run bin/generador_de_json.dart --show-template-schema=product
 ```
 
 > 💡 **Consejo**: Puedes combinar tantos argumentos como necesites para personalizar completamente la generación de tus archivos JSON.
@@ -226,7 +245,7 @@ Puedes personalizar la configuración predeterminada editando el archivo `config
 
 ```json
 {
-  "outputPath": "./examples",
+  "outputPath": "./output",
   "defaultRecordCount": 5,
   "jsonIndent": "  ",
   "addTimestampToFiles": true,
@@ -245,6 +264,12 @@ Puedes personalizar la configuración predeterminada editando el archivo `config
     "encoding": "utf-8",
     "maxSize": 10485760
   },
+  "templates": {
+    "directory": "templates",
+    "defaultTemplate": "",
+    "validateData": true,
+    "allowWithoutTemplate": true
+  },
   "logging": {
     "level": "debug",
     "toFile": true,
@@ -253,7 +278,7 @@ Puedes personalizar la configuración predeterminada editando el archivo `config
 }
 ```
 
-**Ubicación de archivos generados**: El valor `outputPath` determina dónde se guardarán los archivos JSON. Por defecto, los archivos se generan en la carpeta `./examples`. Puedes cambiar esta ubicación de dos formas:
+**Ubicación de archivos generados**: El valor `outputPath` determina dónde se guardarán los archivos JSON. Por defecto, los archivos se generan en la carpeta `./output`. Puedes cambiar esta ubicación de dos formas:
 
 1. **Cambio permanente**: Edita el valor `outputPath` en el archivo `config/config.json`.
 2. **Cambio temporal**: Utiliza el parámetro `--output` al ejecutar el programa:
@@ -271,6 +296,91 @@ Los cambios en el archivo de configuración son permanentes, mientras que los pa
 - `timeOnly`: Solo hora (10:30:00)
 - `usFormat`: Formato estadounidense (04/15/2023)
 - `customFormat`: Formato personalizado definido en "customFormat"
+
+---
+
+## 🧩 **Sistema de Templates**
+
+El generador incluye un potente sistema de templates que permite definir esquemas predefinidos para generar datos estructurados de manera consistente.
+
+### Templates predefinidos
+
+El sistema incluye varios templates predefinidos listos para usar:
+
+- `user`: Genera datos de usuarios con campos como nombre, email, rol, preferencias, etc.
+- `product`: Genera datos de productos con campos como id, nombre, precio, categoría, marca, etc.
+
+### Uso de templates
+
+Para generar datos utilizando un template predefinido:
+
+```bash
+# Generar datos usando el template de usuario
+dart run bin/generador_de_json.dart --template=user
+
+# Generar 20 registros con el template de producto
+dart run bin/generador_de_json.dart --template=product --records=20
+```
+
+### Consultar templates disponibles
+
+Para ver qué templates están disponibles:
+
+```bash
+dart run bin/generador_de_json.dart --list-templates
+```
+
+### Ver esquema de un template
+
+Para inspeccionar el esquema JSON de un template específico:
+
+```bash
+dart run bin/generador_de_json.dart --show-template-schema=user
+```
+
+### Creación de templates personalizados
+
+Puedes crear tus propios templates extendiendo la clase `BaseTemplate`:
+
+```dart
+import 'package:generador_de_json/core/templates/base_template.dart';
+
+class MiTemplate extends BaseTemplate {
+  @override
+  String get name => 'mi_template';
+
+  @override
+  String get description => 'Mi template personalizado';
+
+  @override
+  String get version => '1.0.0';
+
+  @override
+  Map<String, dynamic> _getSchemaInternal() {
+    return {
+      'type': 'object',
+      'required': ['id', 'nombre'],
+      'properties': {
+        'id': {'type': 'integer'},
+        'nombre': {'type': 'string'},
+        // Más propiedades...
+      }
+    };
+  }
+
+  @override
+  Map<String, dynamic> _generateMapInternal() {
+    // Lógica para generar datos según el esquema
+    return {
+      'id': _dataGenerator.generateRandomInt(min: 1, max: 1000),
+      'nombre': _dataGenerator.generateRandomFemaleOrMaleName(),
+      // Más campos...
+    };
+  }
+}
+```
+
+Los templates personalizados deben ubicarse en la carpeta `templates/` y registrarse en el sistema antes de su uso.
 
 ---
 
