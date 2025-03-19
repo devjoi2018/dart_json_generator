@@ -61,4 +61,31 @@ class JsonGeneratorException extends BaseException {
       originalError: originalError,
     );
   }
+
+  /// Error de datos que exceden el tamaño máximo
+  factory JsonGeneratorException.dataExceedsMaxSize(String details, {dynamic originalError}) {
+    return JsonGeneratorException(
+      message: 'Datos demasiado grandes: $details',
+      code: 'DATA_SIZE_EXCEEDED',
+      originalError: originalError,
+    );
+  }
+
+  /// Error de datos inválidos
+  factory JsonGeneratorException.invalidData(String details, {dynamic originalError}) {
+    return JsonGeneratorException(
+      message: 'Datos inválidos: $details',
+      code: 'INVALID_DATA',
+      originalError: originalError,
+    );
+  }
+
+  /// Error general en el generador
+  factory JsonGeneratorException.generationError(String details, {dynamic originalError}) {
+    return JsonGeneratorException(
+      message: 'Error en el generador: $details',
+      code: 'GENERATION_ERROR',
+      originalError: originalError,
+    );
+  }
 }
