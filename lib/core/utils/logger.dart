@@ -22,36 +22,47 @@ class AppLogger {
   /// Instancia del logger
   static late Logger _logger;
 
-  /// Archivo para guardar los logs
-  static IOSink? _logFile;
-
   /// Indica si el logger ha sido inicializado
   static bool _initialized = false;
 
   /// Nivel actual de logging
   static Level _currentLevel = LogLevel.info;
 
+  /// Flag para indicar si se debe escribir a archivo
+  static bool _writeToFile = true;
+
+  /// Flag para indicar si se debe escribir a consola
+  static bool _writeToConsole = true;
+
   /// Inicializa el sistema de logging
   static void init({Level logLevel = LogLevel.info, bool logToFile = true, bool logToConsole = true}) {
-    if (_initialized) return;
+    // Si ya está inicializado, actualizar configuración
+    if (_initialized) {
+      _currentLevel = logLevel;
+      _writeToFile = logToFile;
+      _writeToConsole = logToConsole;
+      Logger.root.level = _currentLevel;
+      return;
+    }
 
     _currentLevel = logLevel;
+    _writeToFile = logToFile;
+    _writeToConsole = logToConsole;
 
     // Configurar el logger
     Logger.root.level = _currentLevel;
+    Logger.root.clearListeners();
 
-    // Añadir manejadores de log según configuración
-    if (logToConsole) {
-      Logger.root.onRecord.listen(_logToConsole);
-    }
-
-    if (logToFile) {
-      _setupLogFile();
-      Logger.root.onRecord.listen(_logToFile);
-    }
+    // Añadir manejador de log único
+    Logger.root.onRecord.listen(_handleLogRecord);
 
     // Crear logger específico para la aplicación
     _logger = Logger(AppConstants.appName);
+
+    // Crear directorio de logs si no existe y es necesario
+    if (_writeToFile) {
+      _createLogDirectory();
+    }
 
     _initialized = true;
 
@@ -61,34 +72,32 @@ class AppLogger {
     );
   }
 
-  /// Configura el archivo de log
-  static void _setupLogFile() {
+  /// Crea el directorio de logs si no existe
+  static void _createLogDirectory() {
     try {
-      // Crear directorio si no existe
       final logDir = Directory(_logDirectory);
       if (!logDir.existsSync()) {
         logDir.createSync(recursive: true);
       }
-
-      // Abrir archivo de log (o crearlo si no existe)
-      final file = File('$_logDirectory/$_logFileName');
-      _logFile = file.openWrite(mode: FileMode.append);
     } catch (e) {
-      print('ERROR: No se pudo configurar el archivo de log: $e');
+      print('ERROR: No se pudo crear el directorio de logs: $e');
     }
   }
 
-  /// Cierra el sistema de logging y los recursos asociados
-  static void close() {
-    try {
-      if (_logFile != null) {
-        _logFile!.flush();
-        _logFile!.close();
-        _logFile = null;
-      }
-    } catch (e) {
-      print('ERROR: No se pudo cerrar el archivo de log: $e');
+  /// Maneja un registro de log
+  static void _handleLogRecord(LogRecord record) {
+    if (_writeToConsole) {
+      _logToConsole(record);
     }
+
+    if (_writeToFile) {
+      _logToFileSynchronously(record);
+    }
+  }
+
+  /// Cierra el sistema de logging
+  static void close() {
+    _initialized = false;
   }
 
   /// Escribe un mensaje en la consola
@@ -107,14 +116,16 @@ class AppLogger {
     }
   }
 
-  /// Escribe un mensaje en el archivo de log
-  static void _logToFile(LogRecord record) {
-    if (_logFile != null) {
-      try {
-        _logFile!.writeln(_formatLogMessage(record, includeStackTrace: true));
-      } catch (e) {
-        print('ERROR: No se pudo escribir en el archivo de log: $e');
-      }
+  /// Escribe un mensaje en el archivo de log de manera sincronizada
+  static void _logToFileSynchronously(LogRecord record) {
+    try {
+      final logMessage = _formatLogMessage(record, includeStackTrace: true);
+      final file = File('$_logDirectory/$_logFileName');
+
+      // Escribir al archivo de forma sincrónica para evitar problemas de concurrencia
+      file.writeAsStringSync('$logMessage\n', mode: FileMode.append);
+    } catch (e) {
+      print('ERROR: No se pudo escribir en el archivo de log: $e');
     }
   }
 
