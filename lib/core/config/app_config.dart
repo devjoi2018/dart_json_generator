@@ -95,6 +95,18 @@ class AppConfig {
   /// Ruta del archivo de configuración
   static final String _configFilePath = '${AppConstants.configBasePath}$_configFileName';
 
+  /// Directorio donde se almacenan los templates personalizados
+  String templatesDirectory = 'templates';
+
+  /// Template por defecto a utilizar para generación
+  String defaultTemplate = '';
+
+  /// Indica si se deben validar los datos generados contra el template
+  bool validateTemplateData = true;
+
+  /// Indica si se permite la generación de datos sin template
+  bool allowGenerationWithoutTemplate = true;
+
   /// Carga la configuración desde el archivo
   void loadConfig() {
     try {
@@ -168,6 +180,12 @@ class AppConfig {
         'defaultListName': defaultListFileName,
         'maxSize': maxFileSize,
       },
+      'templates': {
+        'directory': templatesDirectory,
+        'defaultTemplate': defaultTemplate,
+        'validateData': validateTemplateData,
+        'allowWithoutTemplate': allowGenerationWithoutTemplate,
+      },
       'logging': {'level': logLevel, 'toFile': logToFile, 'toConsole': logToConsole},
     };
   }
@@ -208,6 +226,17 @@ class AppConfig {
         defaultSingleObjectFileName = filesConfig['defaultSingleName'] ?? defaultSingleObjectFileName;
         defaultListFileName = filesConfig['defaultListName'] ?? defaultListFileName;
         maxFileSize = filesConfig['maxSize'] ?? maxFileSize;
+      }
+    }
+
+    // Configuración de templates
+    if (configMap.containsKey('templates')) {
+      final templateConfig = configMap['templates'];
+      if (templateConfig is Map) {
+        templatesDirectory = templateConfig['directory'] ?? templatesDirectory;
+        defaultTemplate = templateConfig['defaultTemplate'] ?? defaultTemplate;
+        validateTemplateData = templateConfig['validateData'] ?? validateTemplateData;
+        allowGenerationWithoutTemplate = templateConfig['allowWithoutTemplate'] ?? allowGenerationWithoutTemplate;
       }
     }
 
@@ -339,5 +368,27 @@ class AppConfig {
   /// Valida que el tamaño del archivo no exceda el máximo configurado
   bool isValidFileSize(int fileSizeInBytes) {
     return fileSizeInBytes <= maxFileSize;
+  }
+
+  /// Obtiene la ruta completa del directorio de templates
+  String getTemplatesDirectoryPath() {
+    if (templatesDirectory.startsWith('/') || templatesDirectory.contains(':')) {
+      // Es una ruta absoluta
+      return templatesDirectory;
+    }
+
+    // Es una ruta relativa
+    final String appDirectory = Directory.current.path;
+    return '$appDirectory${Platform.pathSeparator}$templatesDirectory';
+  }
+
+  /// Verifica si se debe usar un template específico
+  bool shouldUseTemplate() {
+    return defaultTemplate.isNotEmpty;
+  }
+
+  /// Verifica si se permite la generación sin template
+  bool isGenerationWithoutTemplateAllowed() {
+    return allowGenerationWithoutTemplate;
   }
 }
