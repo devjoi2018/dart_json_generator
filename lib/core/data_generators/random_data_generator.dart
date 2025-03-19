@@ -280,8 +280,8 @@ class RandomDataGenerator implements DataGeneratorInterface {
         return _dataCache['avatar'] as String;
       }
 
-      // Generar un identificador aleatorio
-      final avatarId = 10000 + _random.nextInt(90000);
+      // Generar un identificador aleatorio entre 1 y 70
+      final avatarId = 1 + _random.nextInt(70);
 
       // Generar una URL de avatar aleatorio
       final avatarUrl = 'https://i.pravatar.cc/150?img=$avatarId';
