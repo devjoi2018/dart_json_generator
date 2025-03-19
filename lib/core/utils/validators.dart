@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:generador_de_json/core/exceptions/exceptions.dart';
+import 'package:generador_de_json/core/utils/logger.dart';
+import 'package:generador_de_json/core/schema/schema_validator_registry.dart';
 
 /// Utilidades de validación para toda la aplicación
 class Validators {
@@ -132,6 +134,83 @@ class Validators {
       } catch (e) {
         throw JsonGeneratorException.invalidFormat('El elemento en el índice $i no es válido: ${e.toString()}');
       }
+    }
+  }
+
+  /// Valida que los datos no excedan un tamaño máximo
+  static void validateDataSize(dynamic data, int maxSize, String paramName) {
+    try {
+      AppLogger.debug('Validando tamaño de datos: $paramName');
+
+      // Convertir a JSON para estimar el tamaño real
+      final jsonData = jsonEncode(data);
+      final size = jsonData.length;
+
+      // Validar el tamaño máximo
+      if (size > maxSize) {
+        final maxSizeMB = maxSize / (1024 * 1024);
+        final actualSizeMB = size / (1024 * 1024);
+        final errorMsg =
+            'Los datos exceden el tamaño máximo permitido. '
+            'Tamaño: ${actualSizeMB.toStringAsFixed(2)} MB, '
+            'Máximo: ${maxSizeMB.toStringAsFixed(2)} MB';
+        AppLogger.error(errorMsg);
+        throw JsonGeneratorException.dataExceedsMaxSize(errorMsg);
+      }
+
+      AppLogger.debug('Tamaño de datos válido: ${size} bytes');
+    } catch (e) {
+      if (e is BaseException) {
+        rethrow;
+      }
+
+      AppLogger.error('Error al validar tamaño de datos', e, StackTrace.current);
+      throw JsonGeneratorException.invalidData('Error al validar tamaño de datos: ${e.toString()}', originalError: e);
+    }
+  }
+
+  /// Valida datos contra un esquema JSON
+  static bool validateAgainstSchema(dynamic data, dynamic schema, {String format = 'json-schema'}) {
+    try {
+      AppLogger.debug('Validando datos contra esquema: $format');
+
+      // Usar el registro de validadores para obtener el validador adecuado
+      final validatorRegistry = SchemaValidatorRegistry();
+
+      if (!validatorRegistry.hasValidator(format)) {
+        throw ArgumentError('No existe un validador para el formato "$format"');
+      }
+
+      // Realizar la validación
+      return validatorRegistry.validate(data, schema, format);
+    } catch (e) {
+      AppLogger.error('Error en validación contra esquema', e, StackTrace.current);
+
+      if (e is SchemaValidationException) {
+        rethrow;
+      }
+
+      throw SchemaValidationException('Error al validar contra esquema: ${e.toString()}', originalError: e);
+    }
+  }
+
+  /// Valida datos contra un esquema y devuelve detalles de la validación
+  static Map<String, dynamic> validateSchemaWithDetails(dynamic data, dynamic schema, {String format = 'json-schema'}) {
+    try {
+      AppLogger.debug('Validando datos contra esquema con detalles: $format');
+
+      // Usar el registro de validadores para obtener el validador adecuado
+      final validatorRegistry = SchemaValidatorRegistry();
+
+      // Realizar la validación con detalles
+      return validatorRegistry.validateWithDetails(data, schema, format);
+    } catch (e) {
+      AppLogger.error('Error en validación detallada contra esquema', e, StackTrace.current);
+
+      return {
+        'valid': false,
+        'errors': ['Error interno: ${e.toString()}'],
+      };
     }
   }
 }
