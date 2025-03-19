@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:generador_de_json/core/exceptions/exceptions.dart';
+import 'package:generador_de_json/core/utils/logger.dart';
+import 'package:path/path.dart' as path;
 
 /// Utilidades para operaciones con archivos
 class FileUtils {
@@ -143,6 +145,42 @@ class FileUtils {
       } catch (_) {
         // Ignorar errores al eliminar el archivo de prueba
       }
+    }
+  }
+
+  /// Guarda un contenido en un archivo con la ruta especificada
+  static File saveToFile(String fileName, String content, String directoryPath) {
+    try {
+      AppLogger.debug('Guardando archivo: $fileName en $directoryPath');
+
+      // Obtener la ruta completa
+      final outputPath = path.join(directoryPath, fileName);
+      AppLogger.debug('Ruta completa: $outputPath');
+
+      // Validar que la ruta sea segura
+      validateSafePath(outputPath);
+
+      // Asegurar que el directorio existe
+      final directory = ensureDirectoryExists(directoryPath);
+
+      // Verificar permisos de escritura
+      verifyWritePermissions(directory.path);
+
+      // Escribir el archivo
+      final file = writeFile(outputPath, content);
+
+      AppLogger.debug('Archivo guardado correctamente: ${file.path}');
+      return file;
+    } catch (e) {
+      AppLogger.error('Error al guardar archivo: $fileName', e, StackTrace.current);
+      if (e is BaseException) {
+        rethrow;
+      }
+      throw FileException.fileWriteError(
+        'Error al guardar archivo $fileName',
+        outputPath: path.join(directoryPath, fileName),
+        originalError: e,
+      );
     }
   }
 }
