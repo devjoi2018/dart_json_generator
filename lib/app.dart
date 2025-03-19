@@ -3,7 +3,9 @@ import 'package:generador_de_json/core/data_generators/data_generator_module.dar
 import 'package:generador_de_json/core/exceptions/exceptions.dart';
 import 'package:generador_de_json/core/interfaces/data_generator_interface.dart';
 import 'package:generador_de_json/core/interfaces/module_interface.dart';
+import 'package:generador_de_json/core/interfaces/template_interface.dart';
 import 'package:generador_de_json/core/module_registry.dart';
+import 'package:generador_de_json/core/templates/template_module.dart';
 import 'package:generador_de_json/core/utils/logger.dart';
 import 'package:generador_de_json/core/utils/validators.dart';
 import 'package:generador_de_json/features/json_generator/generate_json.dart';
@@ -96,6 +98,12 @@ class App {
       _moduleRegistry.registerModule(jsonGeneratorModule);
       AppLogger.debug('Módulo JsonGeneratorModule registrado correctamente');
 
+      // Módulo de templates
+      final templateModule = TemplateModule();
+      _validateModule(templateModule, 'TemplateModule');
+      _moduleRegistry.registerModule(templateModule);
+      AppLogger.debug('Módulo TemplateModule registrado correctamente');
+
       AppLogger.info('Todos los módulos principales han sido registrados');
     } catch (e) {
       AppLogger.error('Error al registrar módulos principales', e, StackTrace.current);
@@ -140,6 +148,39 @@ class App {
     }
 
     return jsonGeneratorModule.generator;
+  }
+
+  /// Obtiene el gestor de templates
+  TemplateModule get templateModule {
+    _validateInitialized();
+
+    final moduleName = 'template_manager';
+    AppLogger.debug('Obteniendo el módulo de templates: $moduleName');
+
+    final module = _moduleRegistry.getModule<TemplateModule>(moduleName);
+
+    if (module == null) {
+      final errorMsg = 'Módulo no encontrado: $moduleName';
+      AppLogger.error(errorMsg);
+      throw AppException.moduleNotFound(moduleName);
+    }
+
+    return module;
+  }
+
+  /// Obtiene un template específico por su nombre
+  TemplateInterface getTemplate(String templateName) {
+    return templateModule.templateManager.getTemplate(templateName);
+  }
+
+  /// Verifica si existe un template con el nombre especificado
+  bool hasTemplate(String templateName) {
+    return templateModule.templateManager.hasTemplate(templateName);
+  }
+
+  /// Obtiene la lista de nombres de templates disponibles
+  List<String> getAvailableTemplates() {
+    return templateModule.templateManager.getAvailableTemplates();
   }
 
   /// Valida que la aplicación esté inicializada
