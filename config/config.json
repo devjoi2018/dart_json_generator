@@ -30,5 +30,13 @@
     "level": "debug",
     "toFile": true,
     "toConsole": true
+  },
+  "schemas": {
+    "format": "json-schema",
+    "validate": false
+  },
+  "compression": {
+    "enabled": false,
+    "format": "gzip"
   }
 }
