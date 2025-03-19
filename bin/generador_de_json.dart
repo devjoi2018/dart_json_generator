@@ -1,10 +1,12 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:generador_de_json/app.dart';
 import 'package:generador_de_json/core/config/app_config.dart';
 import 'package:generador_de_json/core/exceptions/exceptions.dart';
-import 'package:generador_de_json/core/templates/base_template.dart';
 import 'package:generador_de_json/core/utils/logger.dart';
 import 'package:generador_de_json/core/utils/validators.dart';
+import 'package:generador_de_json/core/formatters/formatter_registry.dart';
+import 'package:generador_de_json/features/json_generator/generate_json.dart';
 
 /// Ejecuta la aplicación con los argumentos proporcionados
 void main(List<String> arguments) {
@@ -36,10 +38,37 @@ void main(List<String> arguments) {
       return;
     }
 
+    // Verificar si se solicitó listar formatos
+    if (parsedArgs.containsKey('list_formats') && parsedArgs['list_formats'] == true) {
+      _listAvailableFormats(app);
+      return;
+    }
+
     // Verificar si se solicitó mostrar un esquema de template
     if (parsedArgs.containsKey('show_template_schema')) {
       final templateName = parsedArgs['show_template_schema'];
       _showTemplateSchema(app, templateName);
+      return;
+    }
+
+    // Verificar si se solicitó listar formatos de esquema
+    if (parsedArgs.containsKey('list_schema_formats') && parsedArgs['list_schema_formats'] == true) {
+      _listAvailableSchemaFormats(app);
+      return;
+    }
+
+    // Verificar si se solicitó generar un esquema
+    if (parsedArgs.containsKey('generate_schema')) {
+      final jsonFileName = parsedArgs['generate_schema'];
+      _generateSchemaFromJson(app, jsonFileName);
+      return;
+    }
+
+    // Verificar si se solicitó validar contra un esquema
+    if (parsedArgs.containsKey('validate_schema')) {
+      final schemaFile = parsedArgs['validate_schema'];
+      final jsonFile = parsedArgs.containsKey('validate_json') ? parsedArgs['validate_json'] : null;
+      _validateJsonAgainstSchema(app, schemaFile, jsonFile);
       return;
     }
 
@@ -59,6 +88,13 @@ void main(List<String> arguments) {
     // Si llegamos aquí, generamos los JSON estándar (sin template)
     /// Ejemplo de como generar un json con un solo dato
     AppLogger.info('Generando ejemplo de JSON único');
+
+    // Obtener el formato de salida si se especificó
+    String? format;
+    if (parsedArgs.containsKey('format')) {
+      format = parsedArgs['format'];
+    }
+
     jsonGenerator.generateJson(
       jsonName: 'example',
       jsonMap: (Map<String, dynamic> data) {
@@ -69,6 +105,7 @@ void main(List<String> arguments) {
           'avatar': dataGenerator.generateRandomAvatarUrl(),
         };
       },
+      format: format,
     );
 
     /// Ejemplo de como generar un json con una lista de datos
@@ -86,6 +123,7 @@ void main(List<String> arguments) {
           },
         );
       },
+      format: format,
     );
 
     AppLogger.info('Archivos JSON generados exitosamente');
@@ -224,6 +262,18 @@ void _updateConfigFromArgs(AppConfig config, Map<String, dynamic> args) {
     config.validateTemplateData = args['validate'];
     AppLogger.debug('Validación de template: ${config.validateTemplateData ? 'habilitada' : 'deshabilitada'}');
   }
+
+  // Formato de salida
+  if (args.containsKey('format')) {
+    config.outputFormat = args['format'];
+    AppLogger.debug('Formato de salida: ${config.outputFormat}');
+  }
+
+  // Configuración de formato de esquema
+  if (args.containsKey('schema_format')) {
+    config.schemaFormat = args['schema_format'];
+    AppLogger.debug('Formato de esquema: ${config.schemaFormat}');
+  }
 }
 
 /// Valida los argumentos de la línea de comandos
@@ -243,6 +293,16 @@ Map<String, dynamic> validateArguments(List<String> arguments) {
 
   if (arguments.contains('--list-templates')) {
     parsedArgs['list_templates'] = true;
+    return parsedArgs;
+  }
+
+  if (arguments.contains('--list-formats')) {
+    parsedArgs['list_formats'] = true;
+    return parsedArgs;
+  }
+
+  if (arguments.contains('--list-schema-formats')) {
+    parsedArgs['list_schema_formats'] = true;
     return parsedArgs;
   }
 
@@ -320,7 +380,7 @@ Map<String, dynamic> validateArguments(List<String> arguments) {
     } else if (arg.startsWith('--gentype=')) {
       // Tipo de generación de datos
       final value = arg.substring('--gentype='.length);
-      final validTypes = ['fully_random', 'consistent', 'realistic'];
+      final validTypes = ['fullyRandom', 'consistent', 'realistic'];
       if (validTypes.contains(value)) {
         parsedArgs['gentype'] = value;
         AppLogger.debug('Argumento gentype: $value');
@@ -328,14 +388,14 @@ Map<String, dynamic> validateArguments(List<String> arguments) {
         AppLogger.warning('Tipo de generación inválido: $value. Valores válidos: ${validTypes.join(", ")}');
       }
     } else if (arg.startsWith('--seed=')) {
-      // Semilla para generación de datos
+      // Semilla para generación determinista
       final value = arg.substring('--seed='.length);
       try {
         final seed = int.parse(value);
         parsedArgs['seed'] = seed;
         AppLogger.debug('Argumento seed: $seed');
       } catch (e) {
-        AppLogger.warning('Valor inválido para seed: $value');
+        AppLogger.warning('Valor inválido para seed: $value, debe ser un número entero');
       }
     } else if (arg.startsWith('--ext=')) {
       // Extensión de archivo
@@ -400,6 +460,41 @@ Map<String, dynamic> validateArguments(List<String> arguments) {
       // No validar datos generados contra el template
       parsedArgs['validate'] = false;
       AppLogger.debug('Validación de template deshabilitada');
+    } else if (arg.startsWith('--format=')) {
+      // Formato de salida
+      final value = arg.substring('--format='.length).toLowerCase();
+      if (['json', 'yaml', 'xml'].contains(value)) {
+        parsedArgs['format'] = value;
+        AppLogger.debug('Argumento format: $value');
+      } else {
+        AppLogger.warning('Formato de salida no soportado: $value. Usando formato por defecto (json)');
+      }
+    } else if (arg.startsWith('--generate-schema=')) {
+      // Generar esquema a partir de un archivo JSON
+      final value = arg.substring('--generate-schema='.length);
+      if (value.isNotEmpty) {
+        parsedArgs['generate_schema'] = value;
+        AppLogger.debug('Generando esquema a partir de JSON: $value');
+      }
+    } else if (arg.startsWith('--validate-schema=')) {
+      // Esquema para validar un JSON
+      final value = arg.substring('--validate-schema='.length);
+      if (value.isNotEmpty) {
+        parsedArgs['validate_schema'] = value;
+        AppLogger.debug('Validando con esquema: $value');
+      }
+    } else if (arg.startsWith('--validate-json=')) {
+      // Archivo JSON a validar contra esquema
+      final value = arg.substring('--validate-json='.length);
+      if (value.isNotEmpty) {
+        parsedArgs['validate_json'] = value;
+        AppLogger.debug('JSON a validar: $value');
+      }
+    } else if (arg.startsWith('--schema-format=')) {
+      // Formato del esquema a utilizar
+      final value = arg.substring('--schema-format='.length).toLowerCase();
+      parsedArgs['schema_format'] = value;
+      AppLogger.debug('Formato de esquema: $value');
     } else {
       AppLogger.warning('Argumento desconocido: $arg');
     }
@@ -432,7 +527,7 @@ Opciones:
   --dateformat=<format>           Formato de fecha (iso8601, shortDate, longDate, timeOnly, usFormat, customFormat)
   --customdateformat=<format>     Formato personalizado para fechas
   --timezone=<zone>               Zona horaria para las fechas
-  --gentype=<type>                Tipo de generación (fully_random, consistent, realistic)
+  --gentype=<type>                Tipo de generación (fullyRandom, consistent, realistic)
   --seed=<number>                 Semilla para generación de datos aleatorios
   --ext=<extension>               Extensión para los archivos generados
   --encoding=<encoding>           Codificación de caracteres (utf-8, ascii, latin1, utf-16)
@@ -444,6 +539,19 @@ Opciones de templates:
   --template=<name>               Template a utilizar para la generación
   --show-template-schema=<name>   Muestra el esquema de un template específico
   --validate, --no-validate       Habilita o deshabilita la validación contra el template
+
+🧩 Opciones de formato de salida:
+--------------------------
+--format=<formato>      : Formato de salida (json, yaml, xml)
+--list-formats          : Listar formatos disponibles
+
+📝 Opciones de esquemas de validación:
+--------------------------
+--list-schema-formats             : Listar formatos de esquema disponibles
+--generate-schema=<archivo.json>  : Generar un esquema a partir de un archivo JSON
+--validate-schema=<archivo.json>  : Esquema para validar datos
+--validate-json=<archivo.json>    : Archivo JSON a validar contra esquema
+--schema-format=<formato>         : Formato del esquema (predeterminado: json-schema)
 ''';
 
   print(help);
@@ -492,38 +600,279 @@ void _showTemplateSchema(App app, String templateName) {
 }
 
 /// Genera JSON utilizando un template
-void _generateWithTemplate(App app, dynamic jsonGenerator, String templateName, Map<String, dynamic> args) {
+void _generateWithTemplate(App app, GenerateJson jsonGenerator, String templateName, Map<String, dynamic> args) {
   try {
+    AppLogger.debug('Generando con template: $templateName');
+
+    // Obtener el template
     if (!app.hasTemplate(templateName)) {
-      AppLogger.error('El template "$templateName" no existe.');
-      print('El template "$templateName" no existe.');
+      AppLogger.error('Template no encontrado: $templateName');
+      print('Error: Template no encontrado: $templateName');
       return;
     }
 
     final template = app.getTemplate(templateName);
-    final recordCount = args.containsKey('records') ? args['records'] : app.config.defaultRecordCount;
+    AppLogger.debug('Template obtenido: ${template.name} (${template.version})');
 
-    AppLogger.info('Generando JSON con template: ${template.name}');
-
-    // Generar un objeto único
-    final singleFileName = '${template.name}_single';
-    jsonGenerator.generateJson(jsonName: singleFileName, jsonMap: (_) => template.generateMap());
-
-    // Generar una lista de objetos
-    final listFileName = '${template.name}_list';
-    jsonGenerator.generateJsonList(jsonName: listFileName, jsonMap: (_) => template.generateList(recordCount));
-
-    AppLogger.info('Generación completada con template: ${template.name}');
-    print('Archivos generados con template "${template.name}":');
-    print('- ${app.config.getOutputFilePath(singleFileName)}.${app.config.fileExtension}');
-    print('- ${app.config.getOutputFilePath(listFileName)}.${app.config.fileExtension}');
-  } catch (e) {
-    if (e is TemplateException) {
-      AppLogger.error('Error al generar con template: ${e.message}');
-      print('Error al generar con template: ${e.message}');
-    } else {
-      AppLogger.error('Error inesperado al generar con template', e, StackTrace.current);
-      print('Error inesperado al generar con template: $e');
+    // Determinar la cantidad de registros
+    int recordCount = app.config.defaultRecordCount;
+    if (args.containsKey('records')) {
+      recordCount = args['records'];
     }
+
+    // Determinar el formato de salida
+    String? format;
+    if (args.containsKey('format')) {
+      format = args['format'];
+    }
+
+    // Generar JSON único
+    AppLogger.debug('Generando objeto único con template: ${template.name}');
+    jsonGenerator.generateJson(
+      jsonName: '${template.name}_single',
+      jsonMap: (_) => template.generateMap(),
+      format: format,
+    );
+
+    // Generar lista
+    AppLogger.debug('Generando lista con template: ${template.name}, registros: $recordCount');
+    jsonGenerator.generateJsonList(
+      jsonName: '${template.name}_list',
+      jsonMap: (_) => template.generateList(recordCount),
+      format: format,
+    );
+
+    AppLogger.info('Archivos generados exitosamente con template: ${template.name}');
+    print('Archivos generados exitosamente con template: ${template.name}');
+  } catch (e) {
+    AppLogger.error('Error al generar con template: $templateName', e, StackTrace.current);
+    print('Error al generar con template $templateName: $e');
+  }
+}
+
+/// Muestra los formatos de salida disponibles
+void _listAvailableFormats(App app) {
+  try {
+    AppLogger.debug('Listando formatos de salida disponibles');
+
+    // Usar el registro de formatos para obtener la lista
+    final formatterRegistry = FormatterRegistry();
+    final formatNames = formatterRegistry.getAvailableFormatNames();
+    final extensions = formatterRegistry.getSupportedExtensions();
+
+    print('\nFormatos de salida disponibles:');
+    print('=====================');
+
+    for (var i = 0; i < formatNames.length; i++) {
+      final format = formatNames[i];
+      final extension = extensions[i];
+      print('- $format: Extensión .$extension, MIME ${formatterRegistry.getFormatter(format).mimeType}');
+    }
+
+    print('\nPara usar: --format=<formato>');
+  } catch (e) {
+    AppLogger.error('Error al listar formatos disponibles', e, StackTrace.current);
+    print('Error al listar formatos disponibles: $e');
+  }
+}
+
+/// Lista los formatos de esquema disponibles
+void _listAvailableSchemaFormats(App app) {
+  try {
+    AppLogger.debug('Listando formatos de esquema disponibles');
+
+    // Usar la aplicación para obtener la lista de formatos
+    final formats = app.getAvailableSchemaFormats();
+
+    print('\nFormatos de esquema disponibles:');
+    print('=====================');
+
+    for (var format in formats) {
+      print('- $format');
+    }
+
+    print('\nPara usar: --schema-format=<formato>');
+  } catch (e) {
+    AppLogger.error('Error al listar formatos de esquema disponibles', e, StackTrace.current);
+    print('Error al listar formatos de esquema disponibles: $e');
+  }
+}
+
+/// Genera un esquema a partir de un archivo JSON
+void _generateSchemaFromJson(App app, String jsonFileName) {
+  try {
+    AppLogger.debug('Generando esquema a partir de JSON: $jsonFileName');
+
+    // Verificar la existencia del archivo
+    final file = File(jsonFileName);
+    if (!file.existsSync()) {
+      AppLogger.error('Archivo JSON no encontrado: $jsonFileName');
+      print('Error: Archivo JSON no encontrado: $jsonFileName');
+      return;
+    }
+
+    // Leer y parsear el archivo JSON
+    final jsonContent = file.readAsStringSync();
+    final jsonData = json.decode(jsonContent);
+
+    if (jsonData is! Map<String, dynamic>) {
+      AppLogger.error('El archivo debe contener un objeto JSON válido: $jsonFileName');
+      print('Error: El archivo debe contener un objeto JSON válido.');
+      return;
+    }
+
+    // Generar el esquema
+    final schemaFormat = app.config.schemaFormat;
+    final schema = app.generateSchema(jsonData, format: schemaFormat);
+
+    // Determinar el nombre del archivo de salida
+    final fileName = jsonFileName.substring(0, jsonFileName.lastIndexOf('.'));
+    final outputFileName = '${fileName}_schema.json';
+
+    // Escribir el esquema generado a un archivo
+    final outputFile = File(outputFileName);
+    final encoder = JsonEncoder.withIndent('  ');
+    outputFile.writeAsStringSync(encoder.convert(schema));
+
+    AppLogger.info('Esquema generado exitosamente: $outputFileName');
+    print('Esquema generado exitosamente: $outputFileName');
+  } catch (e) {
+    AppLogger.error('Error al generar esquema', e, StackTrace.current);
+    print('Error al generar esquema: $e');
+  }
+}
+
+/// Valida un archivo JSON contra un esquema
+void _validateJsonAgainstSchema(App app, String schemaFileName, String? jsonFileName) {
+  try {
+    AppLogger.debug('Validando JSON contra esquema: $schemaFileName');
+
+    // Verificar la existencia del archivo de esquema
+    final schemaFile = File(schemaFileName);
+    if (!schemaFile.existsSync()) {
+      AppLogger.error('Archivo de esquema no encontrado: $schemaFileName');
+      print('Error: Archivo de esquema no encontrado: $schemaFileName');
+      return;
+    }
+
+    // Leer y parsear el archivo de esquema
+    final schemaContent = schemaFile.readAsStringSync();
+    final schema = json.decode(schemaContent);
+
+    // Si no se proporciona un archivo JSON, validar un ejemplo generado
+    if (jsonFileName == null) {
+      AppLogger.debug('No se proporcionó JSON para validar, generando ejemplo...');
+
+      // Generar un ejemplo y validarlo
+      final example = _generateExampleFromSchema(schema);
+
+      // Determinar el formato del esquema
+      final schemaFormat = app.config.schemaFormat;
+
+      // Validar el ejemplo
+      app.validateSchema(example, schema, format: schemaFormat);
+
+      AppLogger.info('Validación exitosa del ejemplo generado');
+      print('Validación exitosa del ejemplo generado:');
+      final encoder = JsonEncoder.withIndent('  ');
+      print(encoder.convert(example));
+
+      return;
+    }
+
+    // Verificar la existencia del archivo JSON
+    final jsonFile = File(jsonFileName);
+    if (!jsonFile.existsSync()) {
+      AppLogger.error('Archivo JSON no encontrado: $jsonFileName');
+      print('Error: Archivo JSON no encontrado: $jsonFileName');
+      return;
+    }
+
+    // Leer y parsear el archivo JSON
+    final jsonContent = jsonFile.readAsStringSync();
+    final jsonData = json.decode(jsonContent);
+
+    // Determinar el formato del esquema
+    final schemaFormat = app.config.schemaFormat;
+
+    // Validar el JSON contra el esquema
+    app.validateSchema(jsonData, schema, format: schemaFormat);
+
+    AppLogger.info('Validación exitosa: $jsonFileName cumple con el esquema $schemaFileName');
+    print('Validación exitosa: El archivo JSON cumple con el esquema especificado.');
+  } catch (e) {
+    AppLogger.error('Error en validación', e, StackTrace.current);
+
+    if (e is SchemaValidationException) {
+      print('Error de validación: ${e.message}');
+    } else {
+      print('Error al validar: $e');
+    }
+  }
+}
+
+/// Genera un ejemplo a partir de un esquema
+Map<String, dynamic> _generateExampleFromSchema(Map<String, dynamic> schema) {
+  final example = <String, dynamic>{};
+
+  // Si el esquema tiene la propiedad 'properties', usarla para generar un ejemplo
+  if (schema.containsKey('properties') && schema['properties'] is Map<String, dynamic>) {
+    final properties = schema['properties'] as Map<String, dynamic>;
+
+    properties.forEach((propName, propSchema) {
+      if (propSchema is Map<String, dynamic>) {
+        example[propName] = _generateExampleValue(propSchema);
+      }
+    });
+  }
+
+  return example;
+}
+
+/// Genera un valor de ejemplo para una propiedad del esquema
+dynamic _generateExampleValue(Map<String, dynamic> propSchema) {
+  // Obtener el tipo de la propiedad
+  final type = propSchema['type'];
+
+  // Usar ejemplos si están definidos
+  if (propSchema.containsKey('example')) {
+    return propSchema['example'];
+  }
+
+  // Generar según el tipo
+  switch (type) {
+    case 'string':
+      if (propSchema.containsKey('enum') && propSchema['enum'] is List) {
+        final enumValues = propSchema['enum'] as List;
+        if (enumValues.isNotEmpty) {
+          return enumValues.first;
+        }
+      }
+      return 'string';
+
+    case 'integer':
+      return 0;
+
+    case 'number':
+      return 0.0;
+
+    case 'boolean':
+      return false;
+
+    case 'array':
+      if (propSchema.containsKey('items') && propSchema['items'] is Map<String, dynamic>) {
+        final itemSchema = propSchema['items'] as Map<String, dynamic>;
+        return [_generateExampleValue(itemSchema)];
+      }
+      return [];
+
+    case 'object':
+      if (propSchema.containsKey('properties') && propSchema['properties'] is Map<String, dynamic>) {
+        return _generateExampleFromSchema(propSchema);
+      }
+      return {};
+
+    default:
+      return null;
   }
 }
