@@ -7,3 +7,5 @@ export 'base_exception.dart';
 export 'app_exception.dart';
 export 'data_generator_exception.dart';
 export 'json_generator_exception.dart';
+export 'file_exception.dart';
+export 'schema_validation_exception.dart';
