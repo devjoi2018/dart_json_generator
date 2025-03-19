@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'package:generador_de_json/app.dart';
 import 'package:generador_de_json/core/config/app_config.dart';
 import 'package:generador_de_json/core/exceptions/exceptions.dart';
+import 'package:generador_de_json/core/templates/base_template.dart';
 import 'package:generador_de_json/core/utils/logger.dart';
 import 'package:generador_de_json/core/utils/validators.dart';
 
@@ -28,6 +30,33 @@ void main(List<String> arguments) {
     final dataGenerator = app.dataGenerator;
     final jsonGenerator = app.jsonGenerator;
 
+    // Verificar si se solicitó listar templates
+    if (parsedArgs.containsKey('list_templates') && parsedArgs['list_templates'] == true) {
+      _listAvailableTemplates(app);
+      return;
+    }
+
+    // Verificar si se solicitó mostrar un esquema de template
+    if (parsedArgs.containsKey('show_template_schema')) {
+      final templateName = parsedArgs['show_template_schema'];
+      _showTemplateSchema(app, templateName);
+      return;
+    }
+
+    // Determinar si usar un template
+    String? templateToUse;
+    if (parsedArgs.containsKey('template')) {
+      templateToUse = parsedArgs['template'];
+    } else if (app.config.shouldUseTemplate()) {
+      templateToUse = app.config.defaultTemplate;
+    }
+
+    if (templateToUse != null && templateToUse.isNotEmpty) {
+      _generateWithTemplate(app, jsonGenerator, templateToUse, parsedArgs);
+      return;
+    }
+
+    // Si llegamos aquí, generamos los JSON estándar (sin template)
     /// Ejemplo de como generar un json con un solo dato
     AppLogger.info('Generando ejemplo de JSON único');
     jsonGenerator.generateJson(
@@ -183,6 +212,18 @@ void _updateConfigFromArgs(AppConfig config, Map<String, dynamic> args) {
     config.enableDataCache = args['cache'] as bool;
     AppLogger.info('Caché ${config.enableDataCache ? "habilitada" : "deshabilitada"}');
   }
+
+  // Template por defecto
+  if (args.containsKey('template')) {
+    config.defaultTemplate = args['template'];
+    AppLogger.debug('Template actualizado: ${config.defaultTemplate}');
+  }
+
+  // Validación de template
+  if (args.containsKey('validate')) {
+    config.validateTemplateData = args['validate'];
+    AppLogger.debug('Validación de template: ${config.validateTemplateData ? 'habilitada' : 'deshabilitada'}');
+  }
 }
 
 /// Valida los argumentos de la línea de comandos
@@ -192,6 +233,18 @@ Map<String, dynamic> validateArguments(List<String> arguments) {
 
   // Mapa para almacenar los argumentos procesados
   final Map<String, dynamic> parsedArgs = {};
+
+  // Manejar ciertas opciones especiales primero
+  if (arguments.contains('--help') || arguments.contains('-h')) {
+    _showHelp();
+    parsedArgs['help'] = true;
+    return parsedArgs;
+  }
+
+  if (arguments.contains('--list-templates')) {
+    parsedArgs['list_templates'] = true;
+    return parsedArgs;
+  }
 
   // Procesar argumentos
   for (int i = 0; i < arguments.length; i++) {
@@ -325,6 +378,28 @@ Map<String, dynamic> validateArguments(List<String> arguments) {
       // Deshabilitar caché
       parsedArgs['cache'] = false;
       AppLogger.debug('Argumento cache deshabilitado');
+    } else if (arg.startsWith('--template=')) {
+      // Template a utilizar
+      final value = arg.substring('--template='.length);
+      if (value.isNotEmpty) {
+        parsedArgs['template'] = value;
+        AppLogger.debug('Argumento template: $value');
+      }
+    } else if (arg.startsWith('--show-template-schema=')) {
+      // Mostrar esquema de un template
+      final value = arg.substring('--show-template-schema='.length);
+      if (value.isNotEmpty) {
+        parsedArgs['show_template_schema'] = value;
+        AppLogger.debug('Mostrando esquema del template: $value');
+      }
+    } else if (arg == '--validate') {
+      // Validar datos generados contra el template
+      parsedArgs['validate'] = true;
+      AppLogger.debug('Validación de template habilitada');
+    } else if (arg == '--no-validate') {
+      // No validar datos generados contra el template
+      parsedArgs['validate'] = false;
+      AppLogger.debug('Validación de template deshabilitada');
     } else {
       AppLogger.warning('Argumento desconocido: $arg');
     }
@@ -338,4 +413,117 @@ void exitWithError() {
   final errorMsg = 'La aplicación finalizó con errores.';
   AppLogger.error(errorMsg);
   print(errorMsg);
+}
+
+/// Muestra la ayuda del programa
+void _showHelp() {
+  final help = '''
+Generador de JSON para Dart.
+
+Uso: dart run bin/generador_de_json.dart [opciones]
+
+Opciones:
+  --help, -h                      Muestra este mensaje de ayuda
+  --output=<path>                 Ruta de salida para los archivos generados
+  --records=<count>               Cantidad de registros a generar
+  --timestamp                     Añade timestamp a los nombres de archivo
+  --indent=<chars>                Caracteres de indentación (ej: "  " o "\\t")
+  --loglevel=<level>              Nivel de log (debug, info, warning, error, fatal)
+  --dateformat=<format>           Formato de fecha (iso8601, shortDate, longDate, timeOnly, usFormat, customFormat)
+  --customdateformat=<format>     Formato personalizado para fechas
+  --timezone=<zone>               Zona horaria para las fechas
+  --gentype=<type>                Tipo de generación (fully_random, consistent, realistic)
+  --seed=<number>                 Semilla para generación de datos aleatorios
+  --ext=<extension>               Extensión para los archivos generados
+  --encoding=<encoding>           Codificación de caracteres (utf-8, ascii, latin1, utf-16)
+  --maxsize=<size>                Tamaño máximo de archivo en MB
+  --cache, --no-cache             Habilita o deshabilita la caché de datos
+
+Opciones de templates:
+  --list-templates                Lista los templates disponibles
+  --template=<name>               Template a utilizar para la generación
+  --show-template-schema=<name>   Muestra el esquema de un template específico
+  --validate, --no-validate       Habilita o deshabilita la validación contra el template
+''';
+
+  print(help);
+}
+
+/// Lista los templates disponibles
+void _listAvailableTemplates(App app) {
+  final templates = app.getAvailableTemplates();
+
+  if (templates.isEmpty) {
+    print('No hay templates disponibles.');
+    return;
+  }
+
+  print('Templates disponibles:');
+  print('=====================');
+
+  for (final templateName in templates) {
+    try {
+      final template = app.getTemplate(templateName);
+      print('- ${template.name}: ${template.description} (v${template.version})');
+    } catch (e) {
+      print('- $templateName: [Error al obtener información]');
+    }
+  }
+}
+
+/// Muestra el esquema de un template específico
+void _showTemplateSchema(App app, String templateName) {
+  try {
+    if (!app.hasTemplate(templateName)) {
+      print('El template "$templateName" no existe.');
+      return;
+    }
+
+    final template = app.getTemplate(templateName);
+    final schema = template.getSchema();
+
+    print('Esquema del template "${template.name}" (${template.description}):');
+    print('=============================================================');
+    final encoder = JsonEncoder.withIndent('  ');
+    print(encoder.convert(schema));
+  } catch (e) {
+    print('Error al obtener el esquema del template: $e');
+  }
+}
+
+/// Genera JSON utilizando un template
+void _generateWithTemplate(App app, dynamic jsonGenerator, String templateName, Map<String, dynamic> args) {
+  try {
+    if (!app.hasTemplate(templateName)) {
+      AppLogger.error('El template "$templateName" no existe.');
+      print('El template "$templateName" no existe.');
+      return;
+    }
+
+    final template = app.getTemplate(templateName);
+    final recordCount = args.containsKey('records') ? args['records'] : app.config.defaultRecordCount;
+
+    AppLogger.info('Generando JSON con template: ${template.name}');
+
+    // Generar un objeto único
+    final singleFileName = '${template.name}_single';
+    jsonGenerator.generateJson(jsonName: singleFileName, jsonMap: (_) => template.generateMap());
+
+    // Generar una lista de objetos
+    final listFileName = '${template.name}_list';
+    jsonGenerator.generateJsonList(jsonName: listFileName, jsonMap: (_) => template.generateList(recordCount));
+
+    AppLogger.info('Generación completada con template: ${template.name}');
+    print('Archivos generados con template "${template.name}":');
+    print('- ${app.config.getOutputFilePath(singleFileName)}.${app.config.fileExtension}');
+    print('- ${app.config.getOutputFilePath(listFileName)}.${app.config.fileExtension}');
+  } catch (e) {
+    if (e is TemplateException) {
+      AppLogger.error('Error al generar con template: ${e.message}');
+      print('Error al generar con template: ${e.message}');
+    } else {
+      AppLogger.error('Error inesperado al generar con template', e, StackTrace.current);
+      print('Error inesperado al generar con template: $e');
+    }
+  }
 }
