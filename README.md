@@ -18,12 +18,14 @@
 - [Generación de Datos Aleatorios](#-generación-de-datos-aleatorios)
 - [Ejemplos Avanzados](#-ejemplos-avanzados)
 - [Personalización](#-personalización)
+- [Formatos de Salida](#-formatos-de-salida)
+- [Validación de Esquemas](#-validación-de-esquemas)
 
 ---
 
 ## 📝 **Descripción**
 
-Dart JSON Generator es una herramienta robusta que permite generar archivos JSON a partir de mapas de datos en Dart. Soporta generación de datos aleatorios, configuraciones personalizables y múltiples formatos de salida.
+Dart JSON Generator es una herramienta robusta que permite generar archivos de datos a partir de mapas de datos en Dart. Soporta generación de datos aleatorios, configuraciones personalizables, múltiples formatos de salida como JSON, YAML y XML, y validación de datos contra esquemas JSON.
 
 ---
 
@@ -142,6 +144,53 @@ dart run bin/generador_de_json.dart --show-template-schema=product
 ```
 
 > 💡 **Consejo**: Puedes combinar tantos argumentos como necesites para personalizar completamente la generación de tus archivos JSON.
+
+### 🧩 **Opciones de formato de salida**
+
+| Argumento            | Descripción                                    | Valor predeterminado | Ejemplo          |
+| -------------------- | ---------------------------------------------- | -------------------- | ---------------- |
+| `--format=<formato>` | Formato de salida a utilizar (json, yaml, xml) | `json`               | `--format=yaml`  |
+| `--list-formats`     | Muestra la lista de formatos disponibles       | -                    | `--list-formats` |
+
+### 🧪 **Ejemplos prácticos**
+
+```bash
+# Generar 50 registros en formato JSON con indentación de 4 espacios
+dart run bin/generador_de_json.dart --records=50 --indent="    "
+
+# Generar datos con formato de fecha completo y marca de tiempo
+dart run bin/generador_de_json.dart --dateformat=longDate --timestamp
+
+# Configuración para desarrollo: registros reducidos y logging mínimo
+dart run bin/generador_de_json.dart --records=3 --loglevel=info --output=./dev
+
+# Configuración para pruebas reproducibles
+dart run bin/generador_de_json.dart --seed=12345 --gentype=consistent --no-cache
+
+# Generar archivos JSON con configuración completa
+dart run bin/generador_de_json.dart --output=./data --records=100 --indent="  " --timestamp --dateformat=shortDate --loglevel=info --seed=42 --gentype=realistic --maxsize=5
+
+# Listar templates disponibles
+dart run bin/generador_de_json.dart --list-templates
+
+# Generar datos usando un template específico
+dart run bin/generador_de_json.dart --template=user --records=10
+
+# Ver el esquema de un template
+dart run bin/generador_de_json.dart --show-template-schema=product
+```
+
+> 💡 **Consejo**: Puedes combinar tantos argumentos como necesites para personalizar completamente la generación de tus archivos JSON.
+
+### 📊 **Opciones de validación de esquemas**
+
+| Argumento                          | Descripción                                       | Ejemplo                                   |
+| ---------------------------------- | ------------------------------------------------- | ----------------------------------------- |
+| `--list-schema-formats`            | Muestra los formatos de esquema disponibles       | `--list-schema-formats`                   |
+| `--generate-schema=<archivo.json>` | Genera un esquema a partir de un archivo JSON     | `--generate-schema=output/datos.json`     |
+| `--validate-schema=<archivo.json>` | Esquema contra el que validar datos               | `--validate-schema=esquemas/usuario.json` |
+| `--validate-json=<archivo.json>`   | Archivo JSON a validar contra el esquema          | `--validate-json=datos/usuario.json`      |
+| `--schema-format=<formato>`        | Formato del esquema (predeterminado: json-schema) | `--schema-format=json-schema`             |
 
 ---
 
@@ -384,11 +433,161 @@ Los templates personalizados deben ubicarse en la carpeta `templates/` y registr
 
 ---
 
+## 🎭 **Formatos de Salida**
+
+El generador soporta múltiples formatos de salida para adaptarse a tus necesidades:
+
+### JSON (Predeterminado)
+
+El formato estándar para intercambio de datos:
+
+```json
+{
+  "id": 1,
+  "nombre": "Juan Pérez",
+  "email": "juan.perez@example.com"
+}
+```
+
+Para utilizar:
+
+```bash
+dart run bin/generador_de_json.dart --format=json
+```
+
+### YAML
+
+Un formato más legible basado en indentación:
+
+```yaml
+id: 1
+nombre: Juan Pérez
+email: juan.perez@example.com
+```
+
+Para utilizar:
+
+```bash
+dart run bin/generador_de_json.dart --format=yaml
+```
+
+### XML
+
+Formato basado en etiquetas, ideal para sistemas que requieren XML:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <id>1</id>
+  <nombre>Juan Pérez</nombre>
+  <email>juan.perez@example.com</email>
+</root>
+```
+
+Para utilizar:
+
+```bash
+dart run bin/generador_de_json.dart --format=xml
+```
+
+### Listar formatos disponibles
+
+Para ver todos los formatos soportados:
+
+```bash
+dart run bin/generador_de_json.dart --list-formats
+```
+
+### Uso con templates
+
+Los formatos funcionan también con el sistema de templates:
+
+```bash
+dart run bin/generador_de_json.dart --template=user --format=xml
+```
+
+---
+
 ## 🔄 **Próximas funcionalidades**
 
-- Soporte para diferentes formatos de salida (YAML, XML)
-- Validación de esquemas JSON
+- ~Soporte para diferentes formatos de salida (YAML, XML)~ ✓ Implementado!
+- ~Validación de esquemas JSON~ ✓ Implementado!
 - Generación asíncrona para archivos grandes
 - Interfaz de línea de comandos mejorada
+
+---
+
+## 🔍 **Validación de Esquemas**
+
+Dart JSON Generator incluye potentes capacidades de validación de esquemas que te permiten:
+
+1. Generar automáticamente esquemas a partir de datos JSON existentes
+2. Validar que los datos JSON cumplan con un esquema específico
+3. Generar datos de ejemplo basados en un esquema
+
+### Generación de esquemas
+
+Para generar un esquema a partir de un archivo JSON existente:
+
+```bash
+dart run bin/generador_de_json.dart --generate-schema=output/datos.json
+```
+
+Esto creará un archivo de esquema JSON en la misma ubicación con el sufijo `_schema`:
+
+```
+output/datos_schema.json
+```
+
+### Validación contra esquemas
+
+Para validar un archivo JSON contra un esquema:
+
+```bash
+dart run bin/generador_de_json.dart --validate-schema=esquemas/usuario.json --validate-json=datos/usuario.json
+```
+
+Si la validación es exitosa, verás un mensaje confirmándolo. Si falla, se mostrará información sobre los errores encontrados.
+
+### Generación de ejemplos
+
+Para generar un ejemplo a partir de un esquema:
+
+```bash
+dart run bin/generador_de_json.dart --validate-schema=esquemas/usuario.json
+```
+
+Esto generará y mostrará un objeto JSON que cumple con el esquema especificado.
+
+### Formatos de esquema soportados
+
+Para ver los formatos de esquema disponibles:
+
+```bash
+dart run bin/generador_de_json.dart --list-schema-formats
+```
+
+Actualmente se soporta:
+
+- `json-schema`: El estándar JSON Schema para validación de datos JSON
+
+### Ejemplo de esquema JSON
+
+Un esquema típico para un objeto usuario podría verse así:
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "id": { "type": "integer" },
+    "nombre": { "type": "string" },
+    "email": { "type": "string" },
+    "activo": { "type": "boolean" }
+  },
+  "required": ["id", "nombre", "email"]
+}
+```
+
+Este esquema define un objeto con propiedades de diferentes tipos y especifica cuáles son obligatorias.
 
 ---
