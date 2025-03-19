@@ -7,7 +7,7 @@ class AppConstants {
   static const String configBasePath = 'config/';
 
   /// Versión de la aplicación
-  static const String appVersion = '1.1.1';
+  static const String appVersion = '1.3.0';
 
   /// Nombre de la aplicación
   static const String appName = 'Dart JSON Generator';
