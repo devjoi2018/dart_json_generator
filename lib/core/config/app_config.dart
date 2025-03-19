@@ -17,9 +17,16 @@ enum DateFormat {
 
 /// Enum para tipos de generación de datos
 enum DataGenerationType {
-  fully_random, // Datos totalmente aleatorios
+  fullyRandom, // Datos totalmente aleatorios
   consistent, // Datos consistentes entre ejecuciones (misma semilla)
   realistic, // Datos realistas y coherentes
+}
+
+/// Enum para formatos de salida
+enum OutputFormat {
+  json, // Formato JSON
+  yaml, // Formato YAML
+  xml, // Formato XML
 }
 
 /// Clase que maneja la configuración de la aplicación
@@ -43,6 +50,9 @@ class AppConfig {
 
   /// Formato de indentación para los archivos JSON
   String jsonIndent = '  ';
+
+  /// Formato de salida por defecto
+  String outputFormat = 'json';
 
   /// Indica si se debe añadir información de timestamp a los archivos generados
   bool addTimestampToFiles = false;
@@ -106,6 +116,10 @@ class AppConfig {
 
   /// Indica si se permite la generación de datos sin template
   bool allowGenerationWithoutTemplate = true;
+
+  /// Configuración de esquemas
+  String schemaFormat = 'json-schema';
+  bool validateWithSchema = false;
 
   /// Carga la configuración desde el archivo
   void loadConfig() {
@@ -187,6 +201,7 @@ class AppConfig {
         'allowWithoutTemplate': allowGenerationWithoutTemplate,
       },
       'logging': {'level': logLevel, 'toFile': logToFile, 'toConsole': logToConsole},
+      'schemas': {'format': schemaFormat, 'validate': validateWithSchema},
     };
   }
 
@@ -247,6 +262,19 @@ class AppConfig {
         logLevel = loggingConfig['level'] ?? logLevel;
         logToFile = loggingConfig['toFile'] ?? logToFile;
         logToConsole = loggingConfig['toConsole'] ?? logToConsole;
+      }
+    }
+
+    // Cargar configuración de esquemas
+    if (configMap.containsKey('schemas')) {
+      final schemas = configMap['schemas'];
+      if (schemas is Map<String, dynamic>) {
+        if (schemas.containsKey('format')) {
+          schemaFormat = schemas['format'] as String;
+        }
+        if (schemas.containsKey('validate')) {
+          validateWithSchema = schemas['validate'] as bool;
+        }
       }
     }
   }
@@ -390,5 +418,44 @@ class AppConfig {
   /// Verifica si se permite la generación sin template
   bool isGenerationWithoutTemplateAllowed() {
     return allowGenerationWithoutTemplate;
+  }
+
+  /// Obtiene el formato de salida como enum
+  OutputFormat getOutputFormatEnum() {
+    switch (outputFormat.toLowerCase()) {
+      case 'yaml':
+        return OutputFormat.yaml;
+      case 'xml':
+        return OutputFormat.xml;
+      case 'json':
+      default:
+        return OutputFormat.json;
+    }
+  }
+
+  /// Convierte un string a formato de salida
+  OutputFormat parseOutputFormat(String format) {
+    switch (format.toLowerCase()) {
+      case 'yaml':
+        return OutputFormat.yaml;
+      case 'xml':
+        return OutputFormat.xml;
+      case 'json':
+        return OutputFormat.json;
+      default:
+        throw AppException.configurationError('Formato de salida no válido: $format');
+    }
+  }
+
+  /// Obtiene la extensión de archivo según el formato de salida
+  String getFileExtension() {
+    switch (getOutputFormatEnum()) {
+      case OutputFormat.yaml:
+        return 'yaml';
+      case OutputFormat.xml:
+        return 'xml';
+      case OutputFormat.json:
+        return fileExtension; // Usa la extensión configurada para JSON
+    }
   }
 }
