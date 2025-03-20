@@ -1,0 +1,9 @@
+{
+  "id": "com.ejemplo.currency_formatter",
+  "name": "Formateador de Monedas",
+  "version": "1.0.0",
+  "description": "Plugin para formatear valores monetarios en diferentes divisas",
+  "author": "Tu Nombre",
+  "entryPoint": "main.dart",
+  "dependencies": []
+} 
