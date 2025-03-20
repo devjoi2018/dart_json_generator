@@ -27,6 +27,7 @@
 - [Formatos de Salida](#-formatos-de-salida)
 - [Validación de Esquemas](#-validación-de-esquemas)
 - [Compresión de Archivos](#-compresión-de-archivos)
+- [Sistema de Plugins](#-sistema-de-plugins)
 
 ---
 
@@ -819,5 +820,45 @@ dart run bin/generador_de_json.dart --records=100 --timestamp --format=json --co
 ```
 
 > 💡 **Nota**: La compresión funciona con cualquier formato de salida (JSON, YAML, XML), permitiendo reducir significativamente el tamaño de los archivos generados sin perder información.
+
+---
+
+## 🔌 **Sistema de Plugins**
+
+Dart JSON Generator ahora soporta un sistema de plugins que permite extender la funcionalidad de la herramienta de manera modular. Los plugins pueden ser utilizados para agregar nuevas capacidades de generación de datos, formatos de salida, o cualquier otra funcionalidad que se desee integrar.
+
+### 📦 **Instalación de Plugins**
+
+Para instalar un plugin, simplemente colócalo en la carpeta `plugins/` dentro del directorio del proyecto. Asegúrate de que el plugin esté implementado correctamente siguiendo las interfaces y contratos definidos por el sistema de plugins.
+
+### 🔄 **Registro de Plugins**
+
+Los plugins deben ser registrados en el sistema antes de su uso. Esto se realiza automáticamente al iniciar la aplicación, siempre que los plugins estén ubicados en la carpeta correcta.
+
+### 🧩 **Uso de Plugins**
+
+Una vez registrados, los plugins pueden ser utilizados como parte del flujo normal de generación de datos. Por ejemplo, un plugin que agrega un nuevo formato de salida estará disponible como una opción adicional al especificar el formato deseado.
+
+### 🔍 **Verificación de Plugins**
+
+Para verificar qué plugins están actualmente registrados y activos, puedes utilizar el siguiente comando:
+
+```bash
+dart run bin/generador_de_json.dart --list-plugins
+```
+
+Este comando mostrará una lista de todos los plugins disponibles y su estado actual.
+
+### 🛠️ **Desarrollo de Plugins**
+
+El desarrollo de plugins es sencillo y sigue un patrón de diseño basado en interfaces. Asegúrate de implementar las interfaces necesarias y de registrar el plugin adecuadamente para que sea reconocido por el sistema.
+
+Para más detalles sobre cómo desarrollar un plugin, consulta la [documentación detallada](docs/plugins/README.md) en la carpeta `docs/plugins/`. Esta guía te proporcionará:
+
+- Una explicación completa de la arquitectura del sistema de plugins
+- Instrucciones paso a paso para crear tu primer plugin
+- Ejemplos prácticos de diferentes tipos de plugins
+- Mejores prácticas y soluciones a problemas comunes
+- Referencia de la API para desarrolladores de plugins
 
 ---
