@@ -3,8 +3,11 @@ import 'package:generador_de_json/core/data_generators/data_generator_module.dar
 import 'package:generador_de_json/core/exceptions/exceptions.dart';
 import 'package:generador_de_json/core/interfaces/data_generator_interface.dart';
 import 'package:generador_de_json/core/interfaces/module_interface.dart';
+import 'package:generador_de_json/core/interfaces/plugin_interface.dart';
 import 'package:generador_de_json/core/interfaces/template_interface.dart';
 import 'package:generador_de_json/core/module_registry.dart';
+import 'package:generador_de_json/core/plugins/plugin_module.dart';
+import 'package:generador_de_json/core/plugins/plugin_registry.dart';
 import 'package:generador_de_json/core/templates/template_module.dart';
 import 'package:generador_de_json/core/utils/logger.dart';
 import 'package:generador_de_json/core/utils/validators.dart';
@@ -107,6 +110,12 @@ class App {
       _validateModule(templateModule, 'TemplateModule');
       _moduleRegistry.registerModule(templateModule);
       AppLogger.debug('Módulo TemplateModule registrado correctamente');
+
+      // Módulo de plugins
+      final pluginModule = PluginModule();
+      _validateModule(pluginModule, 'PluginModule');
+      _moduleRegistry.registerModule(pluginModule);
+      AppLogger.debug('Módulo PluginModule registrado correctamente');
 
       AppLogger.info('Todos los módulos principales han sido registrados');
     } catch (e) {
@@ -292,4 +301,59 @@ class App {
       AppLogger.close();
     }
   }
+
+  /// Inicia la carga asíncrona de plugins
+  Future<void> loadPlugins() async {
+    _validateInitialized();
+
+    try {
+      final moduleName = 'plugin_manager';
+      AppLogger.debug('Obteniendo el módulo de plugins: $moduleName');
+
+      final pluginModule = _moduleRegistry.getModule<PluginModule>(moduleName);
+
+      if (pluginModule == null) {
+        final errorMsg = 'Módulo no encontrado: $moduleName';
+        AppLogger.error(errorMsg);
+        throw AppException.moduleNotFound(moduleName);
+      }
+
+      // Cargar y descubrir plugins
+      await pluginModule.discoverAndLoadPlugins();
+
+      return;
+    } catch (e) {
+      AppLogger.error('Error al cargar plugins', e, StackTrace.current);
+      if (e is BaseException) {
+        rethrow;
+      }
+      throw AppException.initializationError('Error al cargar plugins', originalError: e);
+    }
+  }
+
+  /// Obtiene el registro de plugins
+  PluginRegistry get pluginRegistry {
+    _validateInitialized();
+
+    final moduleName = 'plugin_manager';
+    AppLogger.debug('Obteniendo el registro de plugins desde el módulo: $moduleName');
+
+    final pluginModule = _moduleRegistry.getModule<PluginModule>(moduleName);
+
+    if (pluginModule == null) {
+      final errorMsg = 'Módulo no encontrado: $moduleName';
+      AppLogger.error(errorMsg);
+      throw AppException.moduleNotFound(moduleName);
+    }
+
+    return pluginModule.pluginRegistry;
+  }
+
+  /// Obtiene un plugin por su ID
+  T? getPlugin<T extends PluginInterface>(String pluginId) {
+    return pluginRegistry.getPlugin<T>(pluginId);
+  }
+
+  /// Obtiene información de todos los plugins instalados
+  List<Map<String, dynamic>> get pluginsInfo => pluginRegistry.pluginsInfo;
 }
