@@ -10,3 +10,4 @@ export 'json_generator_exception.dart';
 export 'file_exception.dart';
 export 'schema_validation_exception.dart';
 export 'compression_exception.dart';
+export 'plugin_exception.dart';
